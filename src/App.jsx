@@ -29,6 +29,7 @@ const INITIAL_TRANSACTIONS = [
     type: 'expense',
     category: 'Minuman & Kafe',
     paymentMethod: 'QRIS',
+    priorityTag: 'Tersier',
     note: 'Sore hari',
     date: '2026-11-22'
   },
@@ -39,6 +40,7 @@ const INITIAL_TRANSACTIONS = [
     type: 'income',
     category: 'Pemasukan',
     paymentMethod: 'Transfer',
+    priorityTag: 'Kebutuhan Pokok',
     note: 'Pembayaran klien',
     date: '2026-11-18'
   },
@@ -49,6 +51,7 @@ const INITIAL_TRANSACTIONS = [
     type: 'expense',
     category: 'Perawatan',
     paymentMethod: 'E-Wallet',
+    priorityTag: 'Kebutuhan Pokok',
     note: 'Stok bulanan',
     date: '2026-11-15'
   },
@@ -59,6 +62,7 @@ const INITIAL_TRANSACTIONS = [
     type: 'expense',
     category: 'Sandang',
     paymentMethod: 'QRIS',
+    priorityTag: 'Tersier',
     note: 'Diskon akhir bulan',
     date: '2026-10-28'
   },
@@ -69,6 +73,7 @@ const INITIAL_TRANSACTIONS = [
     type: 'expense',
     category: 'Hiburan',
     paymentMethod: 'Transfer',
+    priorityTag: 'Tersier',
     note: 'Sudah lunas',
     date: '2026-08-14'
   }
@@ -89,6 +94,8 @@ const CATEGORIES = [
   { name: 'Pemasukan', color: '#2d6a4f' },
   { name: 'Lainnya', color: '#95d5b2' }
 ];
+
+const PRIORITY_TAGS = ['Kebutuhan Pokok', 'Tersier'];
 
 const parseLocalDate = (dateStr) => {
   if (!dateStr) return null;
@@ -149,6 +156,7 @@ export default function App() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
+  const [filterTag, setFilterTag] = useState('All');
 
   const [checkMode, setCheckMode] = useState('weekly');
   const [rangeStart, setRangeStart] = useState(todayStr);
@@ -159,6 +167,7 @@ export default function App() {
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('Minuman & Kafe');
   const [paymentMethod, setPaymentMethod] = useState('QRIS');
+  const [priorityTag, setPriorityTag] = useState('Kebutuhan Pokok');
   const [note, setNote] = useState('');
   const [txDate, setTxDate] = useState(todayStr);
 
@@ -261,11 +270,20 @@ export default function App() {
       const matchQuery =
         t.title.toLowerCase().includes(q) ||
         (t.note || '').toLowerCase().includes(q) ||
-        (t.category || '').toLowerCase().includes(q);
+        (t.category || '').toLowerCase().includes(q) ||
+        (t.priorityTag || '').toLowerCase().includes(q);
       const matchCategory = filterCategory === 'All' || t.category === filterCategory;
-      return matchQuery && matchCategory;
+      const matchTag = filterTag === 'All' || (t.priorityTag || 'Kebutuhan Pokok') === filterTag;
+      return matchQuery && matchCategory && matchTag;
     });
-  }, [transactions, searchQuery, filterCategory]);
+  }, [transactions, searchQuery, filterCategory, filterTag]);
+
+  const handleSelectType = (nextType) => {
+    setType(nextType);
+    if (nextType === 'income') {
+      setPriorityTag('Kebutuhan Pokok');
+    }
+  };
 
   const handleAddTransaction = (e) => {
     e.preventDefault();
@@ -278,6 +296,7 @@ export default function App() {
       type,
       category,
       paymentMethod,
+      priorityTag: type === 'income' ? 'Kebutuhan Pokok' : priorityTag,
       note: note.trim(),
       date: txDate || todayStr
     };
@@ -286,6 +305,7 @@ export default function App() {
     setTitle('');
     setAmount('');
     setNote('');
+    setPriorityTag('Kebutuhan Pokok');
     setTxDate(todayStr);
     setShowAddModal(false);
   };
@@ -341,13 +361,13 @@ export default function App() {
   };
 
   const exportCSV = () => {
-    const header = 'ID,Tanggal,Judul,Tipe,Kategori,Metode,Nominal,Catatan\n';
+    const header = 'ID,Tanggal,Judul,Tipe,Tag,Kategori,Metode,Nominal,Catatan\n';
     const rows = transactions
       .map(
         (t) =>
           `${t.id},${t.date},"${(t.title || '').replace(/"/g, '""')}",${t.type},"${
-            t.category
-          }",${t.paymentMethod},${t.amount},"${(t.note || '').replace(/"/g, '""')}"`
+            t.priorityTag || 'Kebutuhan Pokok'
+          }","${t.category}",${t.paymentMethod},${t.amount},"${(t.note || '').replace(/"/g, '""')}"`
       )
       .join('\n');
     const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
@@ -647,7 +667,7 @@ export default function App() {
                       <div>
                         <p className="font-semibold">{item.title}</p>
                         <p className={`text-[11px] ${mutedText}`}>
-                          {item.date} • {item.category}
+                          {item.date} • {item.category} • {item.priorityTag || 'Kebutuhan Pokok'}
                         </p>
                       </div>
                       <span
@@ -754,7 +774,7 @@ export default function App() {
                 onChange={(e) => setFilterCategory(e.target.value)}
                 className={`px-3 py-2 rounded-2xl border text-xs focus:outline-none ${cardBg}`}
               >
-                <option value="All">Semua</option>
+                <option value="All">Semua Kategori</option>
                 {CATEGORIES.map((c) => (
                   <option key={c.name} value={c.name}>
                     {c.name}
@@ -763,47 +783,79 @@ export default function App() {
               </select>
             </div>
 
+            <div className="flex space-x-1.5">
+              {['All', ...PRIORITY_TAGS].map((tagOption) => (
+                <button
+                  key={tagOption}
+                  type="button"
+                  onClick={() => setFilterTag(tagOption)}
+                  className={`px-3 py-1 rounded-xl text-[11px] font-semibold border transition-colors ${
+                    filterTag === tagOption
+                      ? 'bg-[#588157] text-white border-[#588157]'
+                      : `${cardBg} ${mutedText}`
+                  }`}
+                >
+                  {tagOption === 'All' ? 'Semua Tag' : tagOption}
+                </button>
+              ))}
+            </div>
+
             {filteredTransactions.length === 0 ? (
               <div className={`p-6 rounded-3xl border ${cardBg} text-center text-xs ${mutedText}`}>
                 Belum ada transaksi yang tercatat.
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredTransactions.map((t) => (
-                  <div
-                    key={t.id}
-                    className={`p-3.5 rounded-2xl border ${cardBg} flex items-center justify-between`}
-                  >
-                    <div>
-                      <p className="text-xs font-bold">{t.title}</p>
-                      <p className={`text-[11px] mt-0.5 ${mutedText}`}>
-                        {t.date} • {t.category} • {t.paymentMethod}
-                      </p>
-                      {t.note && <p className={`text-[11px] mt-0.5 ${mutedText}`}>{t.note}</p>}
-                    </div>
+                {filteredTransactions.map((t) => {
+                  const tagLabel = t.priorityTag || 'Kebutuhan Pokok';
+                  const isTertiary = tagLabel === 'Tersier';
+                  return (
+                    <div
+                      key={t.id}
+                      className={`p-3.5 rounded-2xl border ${cardBg} flex items-center justify-between`}
+                    >
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <p className="text-xs font-bold">{t.title}</p>
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                              isTertiary
+                                ? 'bg-amber-100/80 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300'
+                                : 'bg-[#588157]/15 text-[#3a5a40] dark:text-[#a3c4a8]'
+                            }`}
+                          >
+                            {tagLabel}
+                          </span>
+                        </div>
+                        <p className={`text-[11px] mt-0.5 ${mutedText}`}>
+                          {t.date} • {t.category} • {t.paymentMethod}
+                        </p>
+                        {t.note && <p className={`text-[11px] mt-0.5 ${mutedText}`}>{t.note}</p>}
+                      </div>
 
-                    <div className="flex items-center space-x-2">
-                      <span
-                        className={`text-xs font-bold ${
-                          t.type === 'income'
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-rose-600 dark:text-rose-400'
-                        }`}
-                      >
-                        {t.type === 'income' ? '+' : '-'}
-                        {formatRupiah(t.amount)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteTransaction(t.id)}
-                        aria-label="Hapus transaksi"
-                        className={`p-1.5 rounded-lg ${mutedText} hover:text-rose-600`}
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        <span
+                          className={`text-xs font-bold ${
+                            t.type === 'income'
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : 'text-rose-600 dark:text-rose-400'
+                          }`}
+                        >
+                          {t.type === 'income' ? '+' : '-'}
+                          {formatRupiah(t.amount)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteTransaction(t.id)}
+                          aria-label="Hapus transaksi"
+                          className={`p-1.5 rounded-lg ${mutedText} hover:text-rose-600`}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -987,7 +1039,7 @@ export default function App() {
               <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-[#588157]/10">
                 <button
                   type="button"
-                  onClick={() => setType('expense')}
+                  onClick={() => handleSelectType('expense')}
                   className={`py-1.5 rounded-xl text-xs font-semibold transition-colors ${
                     type === 'expense'
                       ? 'bg-[#588157] text-white'
@@ -998,7 +1050,7 @@ export default function App() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setType('income')}
+                  onClick={() => handleSelectType('income')}
                   className={`py-1.5 rounded-xl text-xs font-semibold transition-colors ${
                     type === 'income'
                       ? 'bg-[#588157] text-white'
@@ -1075,6 +1127,28 @@ export default function App() {
                   </select>
                 </div>
               </div>
+
+              {type === 'expense' && (
+                <div>
+                  <label className={`text-[11px] font-semibold ${mutedText}`}>Tag Prioritas</label>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    {PRIORITY_TAGS.map((tagOption) => (
+                      <button
+                        key={tagOption}
+                        type="button"
+                        onClick={() => setPriorityTag(tagOption)}
+                        className={`py-2 px-3 rounded-2xl border text-xs font-semibold transition-colors ${
+                          priorityTag === tagOption
+                            ? 'bg-[#588157] text-white border-[#588157]'
+                            : `${cardBg} ${mutedText}`
+                        }`}
+                      >
+                        {tagOption}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className={`text-[11px] font-semibold ${mutedText}`}>Catatan (Opsional)</label>
