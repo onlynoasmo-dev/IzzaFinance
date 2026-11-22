@@ -114,10 +114,19 @@ export default function App() {
   const todayStr = useMemo(() => formatDateISO(new Date()), []);
   const currentMonthPrefix = todayStr.slice(0, 7);
 
+  const [dummyCleared, setDummyCleared] = useState(() => {
+    try {
+      return localStorage.getItem('izza_dummy_cleared') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   const [transactions, setTransactions] = useState(() => {
     try {
       const saved = localStorage.getItem('izza_transactions');
-      return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
+      if (saved !== null) return JSON.parse(saved);
+      return localStorage.getItem('izza_dummy_cleared') === 'true' ? [] : INITIAL_TRANSACTIONS;
     } catch {
       return INITIAL_TRANSACTIONS;
     }
@@ -126,7 +135,8 @@ export default function App() {
   const [goals, setGoals] = useState(() => {
     try {
       const saved = localStorage.getItem('izza_goals');
-      return saved ? JSON.parse(saved) : INITIAL_GOALS;
+      if (saved !== null) return JSON.parse(saved);
+      return localStorage.getItem('izza_dummy_cleared') === 'true' ? [] : INITIAL_GOALS;
     } catch {
       return INITIAL_GOALS;
     }
@@ -137,16 +147,13 @@ export default function App() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
 
-  // Filter untuk riwayat transaksi
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
 
-  // Mode pengecekan khusus: 'weekly' (Minggu Ini) atau 'range' (Range Tanggal)
   const [checkMode, setCheckMode] = useState('weekly');
   const [rangeStart, setRangeStart] = useState(todayStr);
   const [rangeEnd, setRangeEnd] = useState(todayStr);
 
-  // Form transaksi
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('expense');
@@ -155,11 +162,9 @@ export default function App() {
   const [note, setNote] = useState('');
   const [txDate, setTxDate] = useState(todayStr);
 
-  // Form target tabungan
   const [goalName, setGoalName] = useState('');
   const [goalTarget, setGoalTarget] = useState('');
 
-  // Top-up tabungan
   const [topUpGoalId, setTopUpGoalId] = useState(null);
   const [topUpAmount, setTopUpAmount] = useState('');
 
@@ -179,14 +184,20 @@ export default function App() {
     }
   }, [goals]);
 
-  // 1. Saldo keuangan saat ini (seluruh data all-time, tidak berubah karena filter)
+  useEffect(() => {
+    try {
+      localStorage.setItem('izza_dummy_cleared', String(dummyCleared));
+    } catch {
+      // Abaikan jika penyimpanan penuh
+    }
+  }, [dummyCleared]);
+
   const currentBalance = useMemo(() => {
     const allIncome = sumByType(transactions, 'income');
     const allExpense = sumByType(transactions, 'expense');
     return allIncome - allExpense;
   }, [transactions]);
 
-  // 2. Data Hari Ini (tanpa filter)
   const todayTransactions = useMemo(() => {
     return transactions.filter((t) => t.date === todayStr);
   }, [transactions, todayStr]);
@@ -194,7 +205,6 @@ export default function App() {
   const todayIncome = useMemo(() => sumByType(todayTransactions, 'income'), [todayTransactions]);
   const todayExpense = useMemo(() => sumByType(todayTransactions, 'expense'), [todayTransactions]);
 
-  // 3. Data Bulan Ini (tanpa filter)
   const monthTransactions = useMemo(() => {
     return transactions.filter((t) => t.date && t.date.startsWith(currentMonthPrefix));
   }, [transactions, currentMonthPrefix]);
@@ -202,7 +212,6 @@ export default function App() {
   const monthIncome = useMemo(() => sumByType(monthTransactions, 'income'), [monthTransactions]);
   const monthExpense = useMemo(() => sumByType(monthTransactions, 'expense'), [monthTransactions]);
 
-  // 4. Data Minggu Ini (7 hari terakhir sampai hari ini) atau Range Tanggal
   const weeklyStartStr = useMemo(() => {
     const ref = parseLocalDate(todayStr) || new Date();
     const start = new Date(ref);
@@ -233,7 +242,6 @@ export default function App() {
     [checkedTransactions]
   );
 
-  // Grafik pengeluaran bulan ini
   const monthExpenseChartData = useMemo(() => {
     const map = {};
     monthTransactions
@@ -247,7 +255,6 @@ export default function App() {
     }));
   }, [monthTransactions]);
 
-  // Filter riwayat transaksi
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
       const q = searchQuery.toLowerCase();
@@ -364,6 +371,7 @@ export default function App() {
         if (Array.isArray(parsed.transactions) && Array.isArray(parsed.goals)) {
           setTransactions(parsed.transactions);
           setGoals(parsed.goals);
+          setDummyCleared(true);
           alert('Data berhasil dipulihkan.');
         } else {
           alert('Format file backup tidak sesuai.');
@@ -376,12 +384,30 @@ export default function App() {
     e.target.value = '';
   };
 
-  const resetAllData = () => {
-    if (window.confirm('Reset semua data ke pengaturan awal?')) {
+  const clearDummyData = () => {
+    if (
+      window.confirm(
+        'Bersihkan semua data dummy (transaksi contoh dan target contoh) agar aplikasi mulai kosong?'
+      )
+    ) {
+      setTransactions([]);
+      setGoals([]);
+      setDummyCleared(true);
+      try {
+        localStorage.setItem('izza_transactions', JSON.stringify([]));
+        localStorage.setItem('izza_goals', JSON.stringify([]));
+        localStorage.setItem('izza_dummy_cleared', 'true');
+      } catch {
+        // Abaikan jika penyimpanan penuh
+      }
+    }
+  };
+
+  const restoreDummyData = () => {
+    if (window.confirm('Muat ulang data contoh bawaan?')) {
       setTransactions(INITIAL_TRANSACTIONS);
       setGoals(INITIAL_GOALS);
-      localStorage.removeItem('izza_transactions');
-      localStorage.removeItem('izza_goals');
+      setDummyCleared(false);
     }
   };
 
@@ -403,7 +429,6 @@ export default function App() {
 
   return (
     <div className={`min-h-screen ${bgMain} font-sans pb-24 transition-colors duration-200`}>
-      {/* HEADER */}
       <header
         className={`sticky top-0 z-20 backdrop-blur-md border-b px-4 py-3 flex items-center justify-between ${
           darkMode
@@ -431,9 +456,7 @@ export default function App() {
         </button>
       </header>
 
-      {/* KONTEN UTAMA */}
       <main className="max-w-md mx-auto px-4 pt-4 space-y-4">
-        {/* KARTU SALDO SAAT INI (SELALU TAMPIL BESAR & TETAP) */}
         <section className="rounded-3xl bg-gradient-to-br from-[#588157] to-[#3a5a40] text-white p-5 shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-[#d8e8dc] uppercase tracking-wider">
@@ -451,10 +474,8 @@ export default function App() {
           </p>
         </section>
 
-        {/* TAB DASHBOARD */}
         {activeTab === 'dashboard' && (
           <div className="space-y-4">
-            {/* RINGKASAN HARI INI (TANPA FILTER) */}
             <section className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold">Hari Ini</h2>
@@ -492,7 +513,6 @@ export default function App() {
               </div>
             </section>
 
-            {/* RINGKASAN BULAN INI (TANPA FILTER) */}
             <section className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold">Bulan Ini</h2>
@@ -530,7 +550,6 @@ export default function App() {
               </div>
             </section>
 
-            {/* CEK MINGGU INI ATAU RANGE TANGGAL */}
             <section className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1.5">
@@ -651,7 +670,6 @@ export default function App() {
               )}
             </section>
 
-            {/* GRAFIK PENGELUARAN BULAN INI */}
             <section className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold">Distribusi Pengeluaran Bulan Ini</h2>
@@ -718,7 +736,6 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB RIWAYAT TRANSAKSI */}
         {activeTab === 'transactions' && (
           <div className="space-y-3">
             <div className="flex space-x-2">
@@ -748,7 +765,7 @@ export default function App() {
 
             {filteredTransactions.length === 0 ? (
               <div className={`p-6 rounded-3xl border ${cardBg} text-center text-xs ${mutedText}`}>
-                Belum ada transaksi yang sesuai.
+                Belum ada transaksi yang tercatat.
               </div>
             ) : (
               <div className="space-y-2">
@@ -792,7 +809,6 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB TARGET TABUNGAN */}
         {activeTab === 'goals' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -807,78 +823,110 @@ export default function App() {
               </button>
             </div>
 
-            <div className="space-y-3">
-              {goals.map((g) => {
-                const percent = Math.min(100, Math.round((g.current / g.target) * 100));
-                return (
-                  <div key={g.id} className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-xs font-bold">{g.name}</h3>
-                        <p className={`text-[11px] mt-0.5 ${mutedText}`}>
-                          {formatRupiah(g.current)} dari {formatRupiah(g.target)}
-                        </p>
+            {goals.length === 0 ? (
+              <div className={`p-6 rounded-3xl border ${cardBg} text-center text-xs ${mutedText}`}>
+                Belum ada target tabungan. Tekan Tambah Target untuk membuat target baru.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {goals.map((g) => {
+                  const percent = Math.min(100, Math.round((g.current / g.target) * 100));
+                  return (
+                    <div key={g.id} className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-xs font-bold">{g.name}</h3>
+                          <p className={`text-[11px] mt-0.5 ${mutedText}`}>
+                            {formatRupiah(g.current)} dari {formatRupiah(g.target)}
+                          </p>
+                        </div>
+                        <span className="text-xs font-bold text-[#588157] dark:text-[#a3c4a8]">
+                          {percent}%
+                        </span>
                       </div>
-                      <span className="text-xs font-bold text-[#588157] dark:text-[#a3c4a8]">
-                        {percent}%
-                      </span>
-                    </div>
 
-                    <div className="w-full h-2.5 rounded-full bg-[#588157]/15 overflow-hidden">
-                      <div
-                        className="h-full bg-[#588157] rounded-full transition-all duration-300"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-
-                    {topUpGoalId === g.id ? (
-                      <div className="flex space-x-2 pt-1">
-                        <input
-                          type="number"
-                          placeholder="Nominal"
-                          value={topUpAmount}
-                          onChange={(e) => setTopUpAmount(e.target.value)}
-                          className={`flex-1 px-3 py-1.5 rounded-xl border text-xs ${cardBg}`}
+                      <div className="w-full h-2.5 rounded-full bg-[#588157]/15 overflow-hidden">
+                        <div
+                          className="h-full bg-[#588157] rounded-full transition-all duration-300"
+                          style={{ width: `${percent}%` }}
                         />
-                        <button
-                          type="button"
-                          onClick={() => handleTopUpGoal(g.id)}
-                          className="px-3 py-1.5 rounded-xl bg-[#588157] text-white text-xs font-semibold"
-                        >
-                          Simpan
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setTopUpGoalId(null)}
-                          className={`px-2.5 py-1.5 rounded-xl border text-xs ${cardBg}`}
-                        >
-                          <X size={13} />
-                        </button>
                       </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setTopUpGoalId(g.id);
-                          setTopUpAmount('');
-                        }}
-                        className="w-full py-2 rounded-2xl border border-[#588157] text-[#588157] dark:text-[#a3c4a8] text-xs font-semibold hover:bg-[#588157] hover:text-white transition-colors"
-                      >
-                        Tambah Dana
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+
+                      {topUpGoalId === g.id ? (
+                        <div className="flex space-x-2 pt-1">
+                          <input
+                            type="number"
+                            placeholder="Nominal"
+                            value={topUpAmount}
+                            onChange={(e) => setTopUpAmount(e.target.value)}
+                            className={`flex-1 px-3 py-1.5 rounded-xl border text-xs ${cardBg}`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleTopUpGoal(g.id)}
+                            className="px-3 py-1.5 rounded-xl bg-[#588157] text-white text-xs font-semibold"
+                          >
+                            Simpan
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setTopUpGoalId(null)}
+                            className={`px-2.5 py-1.5 rounded-xl border text-xs ${cardBg}`}
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTopUpGoalId(g.id);
+                            setTopUpAmount('');
+                          }}
+                          className="w-full py-2 rounded-2xl border border-[#588157] text-[#588157] dark:text-[#a3c4a8] text-xs font-semibold hover:bg-[#588157] hover:text-white transition-colors"
+                        >
+                          Tambah Dana
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
-        {/* TAB DATA & PANDUAN ANDROID */}
         {activeTab === 'settings' && (
           <div className="space-y-4">
             <section className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
-              <h2 className="text-sm font-bold">Kelola Data Lokal</h2>
+              <h2 className="text-sm font-bold">Pembersihan Data Dummy</h2>
+              <p className={`text-xs leading-relaxed ${mutedText}`}>
+                Hapus seluruh data contoh bawaan agar aplikasi benar-benar kosong dan siap dipakai
+                dengan data asli.
+              </p>
+
+              <button
+                type="button"
+                onClick={clearDummyData}
+                className="w-full py-2.5 px-4 rounded-2xl bg-[#588157] text-white text-xs font-semibold flex items-center justify-center space-x-2"
+              >
+                <Trash2 size={14} />
+                <span>Bersihkan Data Dummy</span>
+              </button>
+
+              {dummyCleared && (
+                <button
+                  type="button"
+                  onClick={restoreDummyData}
+                  className={`w-full py-2 px-4 rounded-2xl border text-xs font-semibold ${cardBg}`}
+                >
+                  Muat Ulang Data Contoh
+                </button>
+              )}
+            </section>
+
+            <section className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
+              <h2 className="text-sm font-bold">Cadangan & Pulihkan Data</h2>
               <p className={`text-xs leading-relaxed ${mutedText}`}>
                 Data tersimpan otomatis di browser perangkat ini. Unduh cadangan secara berkala
                 sebelum membersihkan data browser atau pindah perangkat.
@@ -910,15 +958,6 @@ export default function App() {
                   <span>Pulihkan dari File (.JSON)</span>
                   <input type="file" accept=".json" onChange={importJSON} className="hidden" />
                 </label>
-
-                <button
-                  type="button"
-                  onClick={resetAllData}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 text-xs font-semibold flex items-center justify-center space-x-2"
-                >
-                  <Trash2 size={14} />
-                  <span>Reset Data</span>
-                </button>
               </div>
             </section>
 
@@ -927,15 +966,13 @@ export default function App() {
               <p className={`text-xs leading-relaxed ${mutedText}`}>
                 Buka alamat aplikasi ini di Google Chrome Android, ketuk menu titik tiga di kanan
                 atas, lalu pilih <strong>Tambahkan ke layar utama</strong> atau{' '}
-                <strong>Instal aplikasi</strong>. Aplikasi akan muncul sebagai ikon mandiri di layar
-                depan.
+                <strong>Instal aplikasi</strong>.
               </p>
             </section>
           </div>
         )}
       </main>
 
-      {/* MODAL INPUT TRANSAKSI */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className={`w-full max-w-md rounded-t-3xl sm:rounded-3xl border ${cardBg} p-5 space-y-4`}>
@@ -1061,7 +1098,6 @@ export default function App() {
         </div>
       )}
 
-      {/* MODAL TAMBAH TARGET TABUNGAN */}
       {showGoalModal && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className={`w-full max-w-md rounded-t-3xl sm:rounded-3xl border ${cardBg} p-5 space-y-4`}>
@@ -1109,7 +1145,6 @@ export default function App() {
         </div>
       )}
 
-      {/* NAVIGASI BAWAH */}
       <nav
         className={`fixed bottom-0 left-0 right-0 z-30 max-w-md mx-auto border-t backdrop-blur-md px-5 py-2 flex items-center justify-between ${
           darkMode
