@@ -231,10 +231,10 @@ export default function App() {
           </div>
           <div>
             <h1 className="font-extrabold text-lg tracking-tight flex items-center space-x-1">
-              <span>SlayFinance</span>
+              <span>Izza Finance</span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-[#709775]/20 text-[#709775] font-semibold">Matcha 🍃</span>
             </h1>
-            <p className="text-[#8fb996] text-xs font-medium">Gen Z Money Tracker</p>
+            <p className="text-[#8fb996] text-xs font-medium">Money Tracker of Izza</p>
           </div>
         </div>
 
