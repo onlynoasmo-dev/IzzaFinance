@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  Plus, Sparkles, TrendingUp, TrendingDown, Wallet, PieChart as PieIcon, 
-  List, Target, Download, Upload, Trash2, ArrowUpRight, ArrowDownRight,
-  Sun, Moon, Filter, Search, Tag, Coffee, Heart, Smartphone, ShoppingBag,
-  Sparkle, Award, CheckCircle, RefreshCw, X, ChevronRight, PiggyBank,
-  Smile, Zap
+  Plus, Wallet, List, Target, Download, Upload, Trash2,
+  ArrowUpRight, ArrowDownRight, Sun, Moon, Search, X, ChevronRight,
+  PiggyBank
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
-// --- DATA INITIAL / DEFAULT ---
 const INITIAL_TRANSACTIONS = [
   { id: '1', title: 'Iced Oat Matcha Latte 🍵', amount: 38000, type: 'expense', category: 'Matcha & Coffee', paymentMethod: 'QRIS', tag: '#MatchaDaily', date: '2026-11-20' },
   { id: '2', title: 'Gaji Freelance Aesthetic Design ✨', amount: 3500000, type: 'income', category: 'Gaji / Income', paymentMethod: 'Transfer', tag: '#CuanEra', date: '2026-11-18' },
@@ -41,7 +38,6 @@ const MATCHA_TIPS = [
 ];
 
 export default function App() {
-  // LocalStorage state loader
   const [transactions, setTransactions] = useState(() => {
     const saved = localStorage.getItem('slay_transactions');
     return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
@@ -59,7 +55,6 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
 
-  // Modal Form State
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('expense');
@@ -67,16 +62,13 @@ export default function App() {
   const [paymentMethod, setPaymentMethod] = useState('QRIS');
   const [tag, setTag] = useState('#MatchaDaily');
 
-  // Goal Form State
   const [goalName, setGoalName] = useState('');
   const [goalTarget, setGoalTarget] = useState('');
   const [goalIcon, setGoalIcon] = useState('🍵');
 
-  // Top Up Goal State
   const [topUpGoalId, setTopUpGoalId] = useState(null);
   const [topUpAmount, setTopUpAmount] = useState('');
 
-  // Sync with LocalStorage
   useEffect(() => {
     localStorage.setItem('slay_transactions', JSON.stringify(transactions));
   }, [transactions]);
@@ -85,7 +77,6 @@ export default function App() {
     localStorage.setItem('slay_goals', JSON.stringify(goals));
   }, [goals]);
 
-  // Calculations
   const totalIncome = useMemo(() => {
     return transactions.filter(t => t.type === 'income').reduce((acc, curr) => acc + Number(curr.amount), 0);
   }, [transactions]);
@@ -96,7 +87,6 @@ export default function App() {
 
   const balance = totalIncome - totalExpense;
 
-  // Chart Data
   const chartData = useMemo(() => {
     const catMap = {};
     transactions.filter(t => t.type === 'expense').forEach(t => {
@@ -108,7 +98,6 @@ export default function App() {
     }));
   }, [transactions]);
 
-  // Filtered Transactions
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
       const matchSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -118,7 +107,6 @@ export default function App() {
     });
   }, [transactions, searchQuery, filterCategory]);
 
-  // Handlers
   const handleAddTransaction = (e) => {
     e.preventDefault();
     if (!title || !amount) return;
@@ -174,7 +162,6 @@ export default function App() {
     setTransactions(transactions.filter(t => t.id !== id));
   };
 
-  // Backup & Restore
   const exportJSON = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ transactions, goals }));
     const downloadAnchor = document.createElement('a');
@@ -232,13 +219,11 @@ export default function App() {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
   };
 
-  // Colors based on theme
   const bgMain = darkMode ? 'bg-[#1b241c] text-[#e8f5e9]' : 'bg-[#f4f7f4] text-[#2c3e2e]';
   const cardBg = darkMode ? 'bg-[#243326] border-[#344d37]' : 'bg-white border-[#d8e8d9]';
 
   return (
     <div className={`min-h-screen ${bgMain} font-sans pb-24 transition-colors duration-300`}>
-      {/* HEADER MOBILE & DESKTOP */}
       <header className={`sticky top-0 z-20 backdrop-blur-md ${darkMode ? 'bg-[#1b241c]/80 border-[#344d37]' : 'bg-[#f4f7f4]/80 border-[#d8e8d9]'} border-b px-4 py-3 flex items-center justify-between`}>
         <div className="flex items-center space-x-2">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#709775] to-[#a1cca5] flex items-center justify-center text-white shadow-md shadow-[#709775]/20">
@@ -263,10 +248,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* MAIN CONTAINER */}
       <main className="max-w-md mx-auto px-4 pt-4 space-y-4">
-        
-        {/* BANNER SALDO COQUETTE MATCHA */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#709775] via-[#588157] to-[#3a5a40] text-white p-6 shadow-xl shadow-[#709775]/20">
           <div className="absolute -right-4 -bottom-4 opacity-15 pointer-events-none text-9xl font-bold">🍃</div>
           <div className="relative z-10 space-y-3">
@@ -297,7 +279,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* RANDOM MATCHA TIP */}
         <div className={`p-3.5 rounded-2xl border ${darkMode ? 'bg-[#243326]/60 border-[#344d37]' : 'bg-[#e8f5e9]/80 border-[#a1cca5]/40'} flex items-center space-x-3`}>
           <span className="text-xl">💡</span>
           <p className="text-xs font-medium leading-relaxed italic text-[#588157] dark:text-[#a1cca5]">
@@ -305,11 +286,8 @@ export default function App() {
           </p>
         </div>
 
-        {/* TABS NAVIGATION */}
         {activeTab === 'dashboard' && (
           <div className="space-y-4">
-            
-            {/* SAVINGS GOALS PREVIEW */}
             <div className={`p-4 rounded-3xl border ${cardBg} shadow-sm space-y-3`}>
               <div className="flex justify-between items-center">
                 <h3 className="font-bold text-sm flex items-center space-x-1.5">
@@ -345,7 +323,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* TRANSAKSI TERAKHIR */}
             <div className={`p-4 rounded-3xl border ${cardBg} shadow-sm space-y-3`}>
               <div className="flex justify-between items-center">
                 <h3 className="font-bold text-sm flex items-center space-x-1.5">
@@ -386,10 +363,8 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB TRANSAKSI LENGKAP */}
         {activeTab === 'transactions' && (
           <div className="space-y-3">
-            {/* SEARCH & FILTER */}
             <div className="flex space-x-2">
               <div className="relative flex-1">
                 <Search size={16} className="absolute left-3 top-3 text-gray-400" />
@@ -411,7 +386,6 @@ export default function App() {
               </select>
             </div>
 
-            {/* LIST TRANSAKSI */}
             <div className="space-y-2">
               {filteredTransactions.map((t) => (
                 <div key={t.id} className={`p-3 rounded-2xl border ${cardBg} flex items-center justify-between shadow-sm`}>
@@ -441,11 +415,362 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB SAVINGS GOALS */}
         {activeTab === 'goals' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="font-bold text-sm">Target Tabungan Aesthetic 👛</h3>
               <button 
                 onClick={() => setShowGoalModal(true)}
-                className="px-3 py-1.5 rounded-2xl bg-[#709775] text-white text-xs font-bold flex items-center space-x-1 shadow-md shadow-
+                className="px-3 py-1.5 rounded-2xl bg-[#709775] text-white text-xs font-bold flex items-center space-x-1 shadow-md shadow-[#709775]/20"
+              >
+                <Plus size={14} />
+                <span>Target Baru</span>
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {goals.map(g => {
+                const percent = Math.min(100, Math.round((g.current / g.target) * 100));
+                return (
+                  <div key={g.id} className={`p-4 rounded-3xl border ${cardBg} space-y-3 shadow-sm`}>
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-2xl p-2 rounded-2xl bg-[#709775]/10">{g.icon}</span>
+                        <div>
+                          <h4 className="font-bold text-xs">{g.name}</h4>
+                          <p className="text-[10px] text-gray-400">{formatRupiah(g.current)} / {formatRupiah(g.target)}</p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-black text-[#709775] bg-[#709775]/10 px-2 py-1 rounded-full">{percent}%</span>
+                    </div>
+
+                    <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#709775] to-[#a1cca5] transition-all duration-500 rounded-full"
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+
+                    {topUpGoalId === g.id ? (
+                      <div className="flex space-x-2 pt-1">
+                        <input 
+                          type="number" 
+                          placeholder="Nominal Top-up"
+                          value={topUpAmount}
+                          onChange={(e) => setTopUpAmount(e.target.value)}
+                          className={`flex-1 px-3 py-1 rounded-xl border text-xs ${cardBg}`}
+                        />
+                        <button 
+                          onClick={() => handleTopUpGoal(g.id)}
+                          className="px-3 py-1 rounded-xl bg-[#709775] text-white text-xs font-bold"
+                        >
+                          Simpan
+                        </button>
+                        <button 
+                          onClick={() => setTopUpGoalId(null)}
+                          className="px-2 py-1 rounded-xl border text-xs"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => setTopUpGoalId(g.id)}
+                        className="w-full py-2 rounded-2xl border border-[#709775] text-[#709775] text-xs font-bold hover:bg-[#709775] hover:text-white transition-colors"
+                      >
+                        + Top Up Tabungan 💖
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <div className="space-y-4">
+            <div className={`p-4 rounded-3xl border ${cardBg} shadow-sm space-y-4`}>
+              <h3 className="font-bold text-sm text-center">Analisis Pengeluaran Matcha 📊</h3>
+              
+              <div className="h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={70}
+                      paddingAngle={4}
+                      dataKey="value"
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={MATCHA_CATEGORIES[index % MATCHA_CATEGORIES.length].color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => formatRupiah(value)} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {chartData.map((d, i) => (
+                  <div key={d.name} className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: MATCHA_CATEGORIES[i % MATCHA_CATEGORIES.length].color }} />
+                    <span className="truncate">{d.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="space-y-4">
+            <div className={`p-4 rounded-3xl border ${cardBg} shadow-sm space-y-3`}>
+              <h3 className="font-bold text-sm flex items-center space-x-2">
+                <PiggyBank size={16} className="text-[#709775]" />
+                <span>Kelola Data (100% Gratis & Safe) 🔒</span>
+              </h3>
+              <p className="text-xs text-gray-400">
+                Data kamu otomatis tersimpan di HP/laptop ini (`localStorage`). Kamu bisa download backup-nya agar tidak hilang saat ganti perangkat.
+              </p>
+
+              <div className="space-y-2 pt-2">
+                <button 
+                  onClick={exportJSON}
+                  className="w-full py-2.5 px-4 rounded-2xl bg-[#709775] text-white text-xs font-bold flex items-center justify-center space-x-2 shadow-md shadow-[#709775]/20"
+                >
+                  <Download size={14} />
+                  <span>Download Backup JSON</span>
+                </button>
+
+                <button 
+                  onClick={exportCSV}
+                  className="w-full py-2.5 px-4 rounded-2xl border border-[#709775] text-[#709775] text-xs font-bold flex items-center justify-center space-x-2"
+                >
+                  <Download size={14} />
+                  <span>Export Transaksi to Excel (.CSV)</span>
+                </button>
+
+                <label className="w-full py-2.5 px-4 rounded-2xl border border-gray-300 dark:border-gray-700 text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer">
+                  <Upload size={14} />
+                  <span>Restore Data dari JSON</span>
+                  <input type="file" accept=".json" onChange={importJSON} className="hidden" />
+                </label>
+
+                <button 
+                  onClick={resetAllData}
+                  className="w-full py-2.5 px-4 rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-900/20 text-xs font-bold flex items-center justify-center space-x-2"
+                >
+                  <Trash2 size={14} />
+                  <span>Reset Semua Data</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className={`w-full max-w-md rounded-t-3xl sm:rounded-3xl ${cardBg} p-5 space-y-4`}>
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="font-bold text-sm">Catat Cuan / Spending 🍃</h3>
+              <button onClick={() => setShowAddModal(false)}><X size={18} /></button>
+            </div>
+
+            <form onSubmit={handleAddTransaction} className="space-y-3">
+              <div className="flex rounded-2xl p-1 bg-gray-100 dark:bg-gray-800">
+                <button
+                  type="button"
+                  onClick={() => setType('expense')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition-colors ${type === 'expense' ? 'bg-rose-500 text-white' : 'text-gray-400'}`}
+                >
+                  Pengeluaran 💸
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setType('income')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition-colors ${type === 'income' ? 'bg-emerald-500 text-white' : 'text-gray-400'}`}
+                >
+                  Pemasukan ✨
+                </button>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase">Judul Transaksi</label>
+                <input 
+                  type="text" 
+                  placeholder="Misal: Iced Matcha Oat Milk 🍵"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase">Nominal (Rupiah)</label>
+                <input 
+                  type="number" 
+                  placeholder="38000"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Kategori</label>
+                  <select 
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                  >
+                    {MATCHA_CATEGORIES.map(c => <option key={c.name} value={c.name}>{c.emoji} {c.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Pembayaran</label>
+                  <select 
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                  >
+                    <option value="QRIS">QRIS</option>
+                    <option value="E-Wallet">E-Wallet</option>
+                    <option value="Transfer">Transfer</option>
+                    <option value="Cash">Cash</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase">Hashtag Tag</label>
+                <input 
+                  type="text" 
+                  placeholder="#MatchaDaily"
+                  value={tag}
+                  onChange={(e) => setTag(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                />
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full py-3 rounded-2xl bg-[#709775] text-white font-bold text-xs shadow-lg shadow-[#709775]/30 mt-2"
+              >
+                Simpan Transaksi 💖
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showGoalModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className={`w-full max-w-md rounded-t-3xl sm:rounded-3xl ${cardBg} p-5 space-y-4`}>
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="font-bold text-sm">Target Impian Baru 👛</h3>
+              <button onClick={() => setShowGoalModal(false)}><X size={18} /></button>
+            </div>
+
+            <form onSubmit={handleAddGoal} className="space-y-3">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase">Nama Impian</label>
+                <input 
+                  type="text" 
+                  placeholder="Misal: Liburan ke Japan ⛩️"
+                  value={goalName}
+                  onChange={(e) => setGoalName(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase">Target Biaya (Rp)</label>
+                <input 
+                  type="number" 
+                  placeholder="5000000"
+                  value={goalTarget}
+                  onChange={(e) => setGoalTarget(e.target.value)}
+                  className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase">Pilih Emoji</label>
+                <div className="flex space-x-2 mt-1">
+                  {['🍵', '🎟️', '📱', '👗', '🌊', '✈️'].map(emoji => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setGoalIcon(emoji)}
+                      className={`p-2 rounded-xl text-lg ${goalIcon === emoji ? 'bg-[#709775]/20 border border-[#709775]' : ''}`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full py-3 rounded-2xl bg-[#709775] text-white font-bold text-xs shadow-lg shadow-[#709775]/30 mt-2"
+              >
+                Tambah Target ✨
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <nav className={`fixed bottom-0 left-0 right-0 z-30 max-w-md mx-auto ${darkMode ? 'bg-[#1b241c]/90 border-[#344d37]' : 'bg-white/90 border-[#d8e8d9]'} border-t backdrop-blur-md px-6 py-2 flex justify-between items-center rounded-t-3xl shadow-lg`}>
+        <button 
+          onClick={() => setActiveTab('dashboard')} 
+          className={`flex flex-col items-center space-y-1 ${activeTab === 'dashboard' ? 'text-[#709775]' : 'text-gray-400'}`}
+        >
+          <Wallet size={18} />
+          <span className="text-[10px] font-semibold">Home</span>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('transactions')} 
+          className={`flex flex-col items-center space-y-1 ${activeTab === 'transactions' ? 'text-[#709775]' : 'text-gray-400'}`}
+        >
+          <List size={18} />
+          <span className="text-[10px] font-semibold">Riwayat</span>
+        </button>
+
+        <button 
+          onClick={() => setShowAddModal(true)}
+          className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#709775] to-[#a1cca5] text-white flex items-center justify-center shadow-lg shadow-[#709775]/40 -mt-6 active:scale-95 transition-transform"
+        >
+          <Plus size={24} />
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('goals')} 
+          className={`flex flex-col items-center space-y-1 ${activeTab === 'goals' ? 'text-[#709775]' : 'text-gray-400'}`}
+        >
+          <Target size={18} />
+          <span className="text-[10px] font-semibold">Impian</span>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('settings')} 
+          className={`flex flex-col items-center space-y-1 ${activeTab === 'settings' ? 'text-[#709775]' : 'text-gray-400'}`}
+        >
+          <PiggyBank size={18} />
+          <span className="text-[10px] font-semibold">Data</span>
+        </button>
+      </nav>
+    </div>
+  );
+}
