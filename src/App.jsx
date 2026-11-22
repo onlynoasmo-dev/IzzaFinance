@@ -1,64 +1,93 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Plus, Wallet, List, Target, Download, Upload, Trash2,
-  ArrowUpRight, ArrowDownRight, Sun, Moon, Search, X, ChevronRight,
-  PiggyBank, Calendar
+import {
+  Plus,
+  Wallet,
+  List,
+  Target,
+  Download,
+  Upload,
+  Trash2,
+  ArrowUpRight,
+  ArrowDownRight,
+  Sun,
+  Moon,
+  Search,
+  X,
+  ChevronRight,
+  Database,
+  Calendar,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const INITIAL_TRANSACTIONS = [
-  { id: '1', title: 'Iced Oat Matcha Latte 🍵', amount: 38000, type: 'expense', category: 'Matcha & Coffee', paymentMethod: 'QRIS', tag: '#MatchaDaily', date: '2026-11-22' },
-  { id: '2', title: 'Gaji Freelance Aesthetic Design ✨', amount: 3500000, type: 'income', category: 'Gaji / Income', paymentMethod: 'Transfer', tag: '#CuanEra', date: '2026-11-18' },
-  { id: '3', title: 'Skincare Cushion & Lip Tint 💄', amount: 245000, type: 'expense', category: 'Beauty & Skincare', paymentMethod: 'E-Wallet', tag: '#SelfCare', date: '2026-11-15' },
-  { id: '4', title: 'Thrifting Cardigan Oversize 👗', amount: 120000, type: 'expense', category: 'Fashion & OOTD', paymentMethod: 'QRIS', tag: '#OOTDGoals', date: '2026-10-28' },
-  { id: '5', title: 'Tiket Konser Niki 🎟️', amount: 850000, type: 'expense', category: 'Entertainment', paymentMethod: 'Transfer', tag: '#ConcertLife', date: '2026-08-14' },
+  {
+    id: '1',
+    title: 'Matcha Latte Oat',
+    amount: 38000,
+    type: 'expense',
+    category: 'Minuman & Kafe',
+    paymentMethod: 'QRIS',
+    note: 'Sore hari',
+    date: '2026-11-22'
+  },
+  {
+    id: '2',
+    title: 'Honor Proyek Desain',
+    amount: 3500000,
+    type: 'income',
+    category: 'Pemasukan',
+    paymentMethod: 'Transfer',
+    note: 'Pembayaran klien',
+    date: '2026-11-18'
+  },
+  {
+    id: '3',
+    title: 'Kebutuhan Perawatan Diri',
+    amount: 245000,
+    type: 'expense',
+    category: 'Perawatan',
+    paymentMethod: 'E-Wallet',
+    note: 'Stok bulanan',
+    date: '2026-11-15'
+  },
+  {
+    id: '4',
+    title: 'Belanja Pakaian',
+    amount: 120000,
+    type: 'expense',
+    category: 'Sandang',
+    paymentMethod: 'QRIS',
+    note: 'Diskon akhir bulan',
+    date: '2026-10-28'
+  },
+  {
+    id: '5',
+    title: 'Tiket Acara Musik',
+    amount: 850000,
+    type: 'expense',
+    category: 'Hiburan',
+    paymentMethod: 'Transfer',
+    note: 'Sudah lunas',
+    date: '2026-08-14'
+  }
 ];
 
 const INITIAL_GOALS = [
-  { id: 'g1', name: 'Tiket Konser Wave to Earth 🎟️', target: 1500000, current: 950000, icon: '🎟️' },
-  { id: 'g2', name: 'iPad Pro Matcha Edition 📱', target: 12000000, current: 4800000, icon: '📱' },
-  { id: 'g3', name: 'Liburan ke Bali 🌊', target: 5000000, current: 2300000, icon: '🌊' }
+  { id: 'g1', name: 'Dana Acara Musik', target: 1500000, current: 950000 },
+  { id: 'g2', name: 'Dana Tablet Baru', target: 12000000, current: 4800000 },
+  { id: 'g3', name: 'Dana Liburan', target: 5000000, current: 2300000 }
 ];
 
-const MATCHA_CATEGORIES = [
-  { name: 'Matcha & Coffee', emoji: '🍵', color: '#709775' },
-  { name: 'Beauty & Skincare', emoji: '💄', color: '#A1CCA5' },
-  { name: 'Fashion & OOTD', emoji: '👗', color: '#8FB996' },
-  { name: 'Entertainment', emoji: '🎟️', color: '#B5E2FA' },
-  { name: 'Makan & Snacks', emoji: '🥑', color: '#97A97C' },
-  { name: 'Gaji / Income', emoji: '💸', color: '#415D43' },
-  { name: 'Lain-lain', emoji: '🍡', color: '#C7F9CC' }
-];
-
-const MATCHA_TIPS = [
-  "Matcha Latte itu kebutuhan jiwa, tapi jangan lupa top-up tabungan impianmu ya, Girlie! 🍃✨",
-  "Ingat rumus 50/30/20: 50% Butuh, 30% Matcha & Healing, 20% Masa Depan Slay! 🍵💖",
-  "Nahan wishlist promo 11.11 beda tipis sama investasi kecantikan finansial. Stay Strong! 🥑💅",
-  "Tabungan konser makin tebel, senyum makin lebar. Slay financial goals! 🎟️✨"
-];
-
-const PERIOD_OPTIONS = [
-  { id: 'all', label: 'Selama Ini' },
-  { id: 'daily', label: 'Harian' },
-  { id: 'weekly', label: 'Mingguan' },
-  { id: 'monthly', label: 'Bulanan' },
-  { id: 'yearly', label: 'Tahunan' },
-  { id: 'custom', label: 'Range Tanggal' }
-];
-
-const MONTHS = [
-  { value: '01', label: 'Januari' },
-  { value: '02', label: 'Februari' },
-  { value: '03', label: 'Maret' },
-  { value: '04', label: 'April' },
-  { value: '05', label: 'Mei' },
-  { value: '06', label: 'Juni' },
-  { value: '07', label: 'Juli' },
-  { value: '08', label: 'Agustus' },
-  { value: '09', label: 'September' },
-  { value: '10', label: 'Oktober' },
-  { value: '11', label: 'November' },
-  { value: '12', label: 'Desember' }
+const CATEGORIES = [
+  { name: 'Minuman & Kafe', color: '#588157' },
+  { name: 'Perawatan', color: '#84a98c' },
+  { name: 'Sandang', color: '#a3b18a' },
+  { name: 'Hiburan', color: '#6b9080' },
+  { name: 'Makanan', color: '#3a5a40' },
+  { name: 'Pemasukan', color: '#2d6a4f' },
+  { name: 'Lainnya', color: '#95d5b2' }
 ];
 
 const parseLocalDate = (dateStr) => {
@@ -68,211 +97,221 @@ const parseLocalDate = (dateStr) => {
   return new Date(parts[0], parts[1] - 1, parts[2]);
 };
 
+const formatDateISO = (dateObj) => {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+const sumByType = (list, txType) => {
+  return list
+    .filter((item) => item.type === txType)
+    .reduce((acc, item) => acc + Number(item.amount || 0), 0);
+};
+
 export default function App() {
-  const todayStr = useMemo(() => {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }, []);
+  const todayStr = useMemo(() => formatDateISO(new Date()), []);
+  const currentMonthPrefix = todayStr.slice(0, 7);
 
   const [transactions, setTransactions] = useState(() => {
-    const saved = localStorage.getItem('slay_transactions');
-    return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
+    try {
+      const saved = localStorage.getItem('izza_transactions');
+      return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
+    } catch {
+      return INITIAL_TRANSACTIONS;
+    }
   });
 
   const [goals, setGoals] = useState(() => {
-    const saved = localStorage.getItem('slay_goals');
-    return saved ? JSON.parse(saved) : INITIAL_GOALS;
+    try {
+      const saved = localStorage.getItem('izza_goals');
+      return saved ? JSON.parse(saved) : INITIAL_GOALS;
+    } catch {
+      return INITIAL_GOALS;
+    }
   });
 
   const [darkMode, setDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
+
+  // Filter untuk riwayat transaksi
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
 
-  // Filter Periode State
-  const [periodMode, setPeriodMode] = useState('all');
-  const [selectedDate, setSelectedDate] = useState(todayStr);
-  const [selectedMonth, setSelectedMonth] = useState(todayStr.slice(5, 7));
-  const [selectedYear, setSelectedYear] = useState(todayStr.slice(0, 4));
-  const [startDate, setStartDate] = useState(todayStr);
-  const [endDate, setEndDate] = useState(todayStr);
+  // Mode pengecekan khusus: 'weekly' (Minggu Ini) atau 'range' (Range Tanggal)
+  const [checkMode, setCheckMode] = useState('weekly');
+  const [rangeStart, setRangeStart] = useState(todayStr);
+  const [rangeEnd, setRangeEnd] = useState(todayStr);
 
-  // Modal Form State
+  // Form transaksi
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('expense');
-  const [category, setCategory] = useState('Matcha & Coffee');
+  const [category, setCategory] = useState('Minuman & Kafe');
   const [paymentMethod, setPaymentMethod] = useState('QRIS');
-  const [tag, setTag] = useState('#MatchaDaily');
+  const [note, setNote] = useState('');
   const [txDate, setTxDate] = useState(todayStr);
 
-  // Goal Form State
+  // Form target tabungan
   const [goalName, setGoalName] = useState('');
   const [goalTarget, setGoalTarget] = useState('');
-  const [goalIcon, setGoalIcon] = useState('🍵');
 
-  // Top Up Goal State
+  // Top-up tabungan
   const [topUpGoalId, setTopUpGoalId] = useState(null);
   const [topUpAmount, setTopUpAmount] = useState('');
 
   useEffect(() => {
-    localStorage.setItem('slay_transactions', JSON.stringify(transactions));
+    try {
+      localStorage.setItem('izza_transactions', JSON.stringify(transactions));
+    } catch {
+      // Abaikan jika penyimpanan penuh
+    }
   }, [transactions]);
 
   useEffect(() => {
-    localStorage.setItem('slay_goals', JSON.stringify(goals));
+    try {
+      localStorage.setItem('izza_goals', JSON.stringify(goals));
+    } catch {
+      // Abaikan jika penyimpanan penuh
+    }
   }, [goals]);
 
-  const availableYears = useMemo(() => {
-    const years = new Set([todayStr.slice(0, 4)]);
-    transactions.forEach((t) => {
-      if (t.date && t.date.length >= 4) {
-        years.add(t.date.slice(0, 4));
-      }
-    });
-    return Array.from(years).sort((a, b) => Number(b) - Number(a));
+  // 1. Saldo keuangan saat ini (seluruh data all-time, tidak berubah karena filter)
+  const currentBalance = useMemo(() => {
+    const allIncome = sumByType(transactions, 'income');
+    const allExpense = sumByType(transactions, 'expense');
+    return allIncome - allExpense;
+  }, [transactions]);
+
+  // 2. Data Hari Ini (tanpa filter)
+  const todayTransactions = useMemo(() => {
+    return transactions.filter((t) => t.date === todayStr);
   }, [transactions, todayStr]);
 
-  const periodTransactions = useMemo(() => {
+  const todayIncome = useMemo(() => sumByType(todayTransactions, 'income'), [todayTransactions]);
+  const todayExpense = useMemo(() => sumByType(todayTransactions, 'expense'), [todayTransactions]);
+
+  // 3. Data Bulan Ini (tanpa filter)
+  const monthTransactions = useMemo(() => {
+    return transactions.filter((t) => t.date && t.date.startsWith(currentMonthPrefix));
+  }, [transactions, currentMonthPrefix]);
+
+  const monthIncome = useMemo(() => sumByType(monthTransactions, 'income'), [monthTransactions]);
+  const monthExpense = useMemo(() => sumByType(monthTransactions, 'expense'), [monthTransactions]);
+
+  // 4. Data Minggu Ini (7 hari terakhir sampai hari ini) atau Range Tanggal
+  const weeklyStartStr = useMemo(() => {
+    const ref = parseLocalDate(todayStr) || new Date();
+    const start = new Date(ref);
+    start.setDate(ref.getDate() - 6);
+    return formatDateISO(start);
+  }, [todayStr]);
+
+  const checkedTransactions = useMemo(() => {
+    if (checkMode === 'weekly') {
+      return transactions.filter(
+        (t) => t.date && t.date >= weeklyStartStr && t.date <= todayStr
+      );
+    }
     return transactions.filter((t) => {
-      if (!t.date) return periodMode === 'all';
-      if (periodMode === 'all') return true;
-      if (periodMode === 'daily') return t.date === selectedDate;
-
-      if (periodMode === 'weekly') {
-        const txD = parseLocalDate(t.date);
-        const refD = parseLocalDate(selectedDate);
-        if (!txD || !refD) return false;
-        const startWeek = new Date(refD);
-        startWeek.setDate(refD.getDate() - 6);
-        return txD >= startWeek && txD <= refD;
-      }
-
-      if (periodMode === 'monthly') {
-        return t.date.slice(0, 7) === `${selectedYear}-${selectedMonth}`;
-      }
-
-      if (periodMode === 'yearly') {
-        return t.date.slice(0, 4) === selectedYear;
-      }
-
-      if (periodMode === 'custom') {
-        if (startDate && t.date < startDate) return false;
-        if (endDate && t.date > endDate) return false;
-        return true;
-      }
-
+      if (!t.date) return false;
+      if (rangeStart && t.date < rangeStart) return false;
+      if (rangeEnd && t.date > rangeEnd) return false;
       return true;
     });
-  }, [transactions, periodMode, selectedDate, selectedMonth, selectedYear, startDate, endDate]);
+  }, [transactions, checkMode, weeklyStartStr, todayStr, rangeStart, rangeEnd]);
 
-  const periodLabel = useMemo(() => {
-    if (periodMode === 'all') return 'Selama Ini (All Time)';
-    if (periodMode === 'daily') return `Harian • ${selectedDate}`;
-    if (periodMode === 'weekly') {
-      const refD = parseLocalDate(selectedDate) || new Date();
-      const startWeek = new Date(refD);
-      startWeek.setDate(refD.getDate() - 6);
-      const sw = `${startWeek.getFullYear()}-${String(startWeek.getMonth() + 1).padStart(2, '0')}-${String(startWeek.getDate()).padStart(2, '0')}`;
-      return `Mingguan • ${sw} s/d ${selectedDate}`;
-    }
-    if (periodMode === 'monthly') {
-      const mName = MONTHS.find((m) => m.value === selectedMonth)?.label || selectedMonth;
-      return `Bulanan • ${mName} ${selectedYear}`;
-    }
-    if (periodMode === 'yearly') return `Tahunan • ${selectedYear}`;
-    if (periodMode === 'custom') return `Range • ${startDate || '...'} s/d ${endDate || '...'}`;
-    return 'Selama Ini';
-  }, [periodMode, selectedDate, selectedMonth, selectedYear, startDate, endDate]);
+  const checkedIncome = useMemo(
+    () => sumByType(checkedTransactions, 'income'),
+    [checkedTransactions]
+  );
+  const checkedExpense = useMemo(
+    () => sumByType(checkedTransactions, 'expense'),
+    [checkedTransactions]
+  );
 
-  const totalIncome = useMemo(() => {
-    return periodTransactions
-      .filter((t) => t.type === 'income')
-      .reduce((acc, curr) => acc + Number(curr.amount), 0);
-  }, [periodTransactions]);
-
-  const totalExpense = useMemo(() => {
-    return periodTransactions
-      .filter((t) => t.type === 'expense')
-      .reduce((acc, curr) => acc + Number(curr.amount), 0);
-  }, [periodTransactions]);
-
-  const balance = totalIncome - totalExpense;
-
-  const chartData = useMemo(() => {
-    const catMap = {};
-    periodTransactions
+  // Grafik pengeluaran bulan ini
+  const monthExpenseChartData = useMemo(() => {
+    const map = {};
+    monthTransactions
       .filter((t) => t.type === 'expense')
       .forEach((t) => {
-        catMap[t.category] = (catMap[t.category] || 0) + Number(t.amount);
+        map[t.category] = (map[t.category] || 0) + Number(t.amount || 0);
       });
-    return Object.keys(catMap).map((cat) => ({
-      name: cat,
-      value: catMap[cat]
+    return Object.keys(map).map((key) => ({
+      name: key,
+      value: map[key]
     }));
-  }, [periodTransactions]);
+  }, [monthTransactions]);
 
+  // Filter riwayat transaksi
   const filteredTransactions = useMemo(() => {
-    return periodTransactions.filter((t) => {
-      const matchSearch =
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (t.tag || '').toLowerCase().includes(searchQuery.toLowerCase());
-      const matchCat = filterCategory === 'All' || t.category === filterCategory;
-      return matchSearch && matchCat;
+    return transactions.filter((t) => {
+      const q = searchQuery.toLowerCase();
+      const matchQuery =
+        t.title.toLowerCase().includes(q) ||
+        (t.note || '').toLowerCase().includes(q) ||
+        (t.category || '').toLowerCase().includes(q);
+      const matchCategory = filterCategory === 'All' || t.category === filterCategory;
+      return matchQuery && matchCategory;
     });
-  }, [periodTransactions, searchQuery, filterCategory]);
+  }, [transactions, searchQuery, filterCategory]);
 
   const handleAddTransaction = (e) => {
     e.preventDefault();
-    if (!title || !amount) return;
+    if (!title.trim() || !amount) return;
 
-    const newTx = {
+    const newItem = {
       id: Date.now().toString(),
-      title,
+      title: title.trim(),
       amount: Number(amount),
       type,
       category,
       paymentMethod,
-      tag: tag.startsWith('#') ? tag : `#${tag}`,
+      note: note.trim(),
       date: txDate || todayStr
     };
 
-    setTransactions([newTx, ...transactions]);
+    setTransactions([newItem, ...transactions]);
     setTitle('');
     setAmount('');
+    setNote('');
     setTxDate(todayStr);
     setShowAddModal(false);
   };
 
+  const handleDeleteTransaction = (id) => {
+    setTransactions(transactions.filter((t) => t.id !== id));
+  };
+
   const handleAddGoal = (e) => {
     e.preventDefault();
-    if (!goalName || !goalTarget) return;
+    if (!goalName.trim() || !goalTarget) return;
 
-    const newG = {
+    const newGoal = {
       id: Date.now().toString(),
-      name: goalName,
+      name: goalName.trim(),
       target: Number(goalTarget),
-      current: 0,
-      icon: goalIcon
+      current: 0
     };
 
-    setGoals([...goals, newG]);
+    setGoals([...goals, newGoal]);
     setGoalName('');
     setGoalTarget('');
     setShowGoalModal(false);
   };
 
-  const handleTopUpGoal = (id) => {
-    if (!topUpAmount || isNaN(topUpAmount)) return;
+  const handleTopUpGoal = (goalId) => {
+    const val = Number(topUpAmount);
+    if (!val || val <= 0) return;
+
     setGoals(
       goals.map((g) => {
-        if (g.id === id) {
-          return { ...g, current: Math.min(g.target, g.current + Number(topUpAmount)) };
+        if (g.id === goalId) {
+          return { ...g, current: Math.min(g.target, g.current + val) };
         }
         return g;
       })
@@ -281,62 +320,68 @@ export default function App() {
     setTopUpAmount('');
   };
 
-  const handleDeleteTransaction = (id) => {
-    setTransactions(transactions.filter((t) => t.id !== id));
-  };
-
   const exportJSON = () => {
-    const dataStr =
-      'data:text/json;charset=utf-8,' +
-      encodeURIComponent(JSON.stringify({ transactions, goals }));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `slay_finance_backup_${todayStr}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
-
-  const exportCSV = () => {
-    let csvContent = 'data:text/csv;charset=utf-8,ID,Tanggal,Judul,Tipe,Kategori,Metode,Nominal,Tag\n';
-    transactions.forEach((t) => {
-      csvContent += `${t.id},${t.date},"${t.title}",${t.type},"${t.category}",${t.paymentMethod},${t.amount},"${t.tag}"\n`;
-    });
-    const encodedUri = encodeURI(csvContent);
+    const payload = JSON.stringify({ transactions, goals }, null, 2);
+    const blob = new Blob([payload], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `transaksi_slayfinance_${todayStr}.csv`);
+    link.href = url;
+    link.download = `izzafinance_backup_${todayStr}.json`;
     document.body.appendChild(link);
     link.click();
     link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportCSV = () => {
+    const header = 'ID,Tanggal,Judul,Tipe,Kategori,Metode,Nominal,Catatan\n';
+    const rows = transactions
+      .map(
+        (t) =>
+          `${t.id},${t.date},"${(t.title || '').replace(/"/g, '""')}",${t.type},"${
+            t.category
+          }",${t.paymentMethod},${t.amount},"${(t.note || '').replace(/"/g, '""')}"`
+      )
+      .join('\n');
+    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `izzafinance_transaksi_${todayStr}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   };
 
   const importJSON = (e) => {
-    const fileReader = new FileReader();
-    if (e.target.files[0]) {
-      fileReader.readAsText(e.target.files[0], 'UTF-8');
-      fileReader.onload = (event) => {
-        try {
-          const parsed = JSON.parse(event.target.result);
-          if (parsed.transactions && parsed.goals) {
-            setTransactions(parsed.transactions);
-            setGoals(parsed.goals);
-            alert('✨ Berhasil restore data SlayFinance kamu!');
-          } else {
-            alert('File tidak valid.');
-          }
-        } catch (err) {
-          alert('Gagal membaca file JSON.');
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result || '{}');
+        if (Array.isArray(parsed.transactions) && Array.isArray(parsed.goals)) {
+          setTransactions(parsed.transactions);
+          setGoals(parsed.goals);
+          alert('Data berhasil dipulihkan.');
+        } else {
+          alert('Format file backup tidak sesuai.');
         }
-      };
-    }
+      } catch {
+        alert('Gagal membaca file JSON.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const resetAllData = () => {
-    if (window.confirm('Yakin mau hapus semua data dan kembali ke awal?')) {
+    if (window.confirm('Reset semua data ke pengaturan awal?')) {
       setTransactions(INITIAL_TRANSACTIONS);
       setGoals(INITIAL_GOALS);
-      localStorage.clear();
+      localStorage.removeItem('izza_transactions');
+      localStorage.removeItem('izza_goals');
     }
   };
 
@@ -345,316 +390,331 @@ export default function App() {
       style: 'currency',
       currency: 'IDR',
       maximumFractionDigits: 0
-    }).format(val);
+    }).format(Number(val || 0));
   };
 
-  const bgMain = darkMode ? 'bg-[#1b241c] text-[#e8f5e9]' : 'bg-[#f4f7f4] text-[#2c3e2e]';
-  const cardBg = darkMode ? 'bg-[#243326] border-[#344d37]' : 'bg-white border-[#d8e8d9]';
+  const bgMain = darkMode
+    ? 'bg-[#162018] text-[#e8f3ea]'
+    : 'bg-[#f3f7f4] text-[#223326]';
+  const cardBg = darkMode
+    ? 'bg-[#1f2d22] border-[#314736]'
+    : 'bg-white border-[#dce8df]';
+  const mutedText = darkMode ? 'text-[#9cb5a1]' : 'text-[#637868]';
 
   return (
-    <div className={`min-h-screen ${bgMain} font-sans pb-24 transition-colors duration-300`}>
+    <div className={`min-h-screen ${bgMain} font-sans pb-24 transition-colors duration-200`}>
+      {/* HEADER */}
       <header
-        className={`sticky top-0 z-20 backdrop-blur-md ${
-          darkMode ? 'bg-[#1b241c]/80 border-[#344d37]' : 'bg-[#f4f7f4]/80 border-[#d8e8d9]'
-        } border-b px-4 py-3 flex items-center justify-between`}
+        className={`sticky top-0 z-20 backdrop-blur-md border-b px-4 py-3 flex items-center justify-between ${
+          darkMode
+            ? 'bg-[#162018]/90 border-[#314736]'
+            : 'bg-[#f3f7f4]/90 border-[#dce8df]'
+        }`}
       >
-        <div className="flex items-center space-x-2">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#709775] to-[#a1cca5] flex items-center justify-center text-white shadow-md shadow-[#709775]/20">
-            <span className="text-xl">🍵</span>
+        <div className="flex items-center space-x-2.5">
+          <div className="w-9 h-9 rounded-xl bg-[#588157] text-white flex items-center justify-center shadow-sm">
+            <Wallet size={18} />
           </div>
           <div>
-            <h1 className="font-extrabold text-lg tracking-tight flex items-center space-x-1">
-              <span>Izza Finance</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[#709775]/20 text-[#709775] font-semibold">
-                Matcha 🍃
-              </span>
-            </h1>
-            <p className="text-[#8fb996] text-xs font-medium">Money Tracker of Izza</p>
+            <h1 className="font-bold text-base leading-tight tracking-tight">IzzaFinance</h1>
+            <p className={`text-[11px] ${mutedText}`}>Catatan Keuangan Pribadi</p>
           </div>
         </div>
 
         <button
+          type="button"
           onClick={() => setDarkMode(!darkMode)}
-          className={`p-2 rounded-xl border ${
-            darkMode
-              ? 'bg-[#243326] border-[#344d37] text-amber-300'
-              : 'bg-white border-[#d8e8d9] text-[#709775]'
-          } transition-transform active:scale-95 shadow-sm`}
+          aria-label="Ganti tema"
+          className={`p-2 rounded-xl border ${cardBg} transition-colors`}
         >
-          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+          {darkMode ? <Sun size={17} /> : <Moon size={17} />}
         </button>
       </header>
 
+      {/* KONTEN UTAMA */}
       <main className="max-w-md mx-auto px-4 pt-4 space-y-4">
-        {/* PANEL FILTER PERIODE HARIAN / MINGGUAN / BULANAN / TAHUNAN / RANGE */}
-        <div className={`p-3.5 rounded-3xl border ${cardBg} shadow-sm space-y-3`}>
+        {/* KARTU SALDO SAAT INI (SELALU TAMPIL BESAR & TETAP) */}
+        <section className="rounded-3xl bg-gradient-to-br from-[#588157] to-[#3a5a40] text-white p-5 shadow-md">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-1.5 text-xs font-bold text-[#709775]">
-              <Calendar size={15} />
-              <span>Filter Periode Data</span>
-            </div>
-            {periodMode !== 'all' && (
-              <button
-                type="button"
-                onClick={() => setPeriodMode('all')}
-                className="text-[11px] font-bold text-[#709775] hover:underline"
-              >
-                Reset (Selama Ini)
-              </button>
-            )}
+            <span className="text-xs font-medium text-[#d8e8dc] uppercase tracking-wider">
+              Saldo Saat Ini
+            </span>
+            <span className="text-[11px] bg-white/15 px-2.5 py-0.5 rounded-full">
+              Terkini
+            </span>
           </div>
-
-          <div className="flex flex-wrap gap-1.5">
-            {PERIOD_OPTIONS.map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => setPeriodMode(opt.id)}
-                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-colors ${
-                  periodMode === opt.id
-                    ? 'bg-[#709775] text-white'
-                    : darkMode
-                    ? 'bg-[#1b241c] text-[#a1cca5] border border-[#344d37]'
-                    : 'bg-[#f4f7f4] text-[#588157] border border-[#d8e8d9]'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-
-          {(periodMode === 'daily' || periodMode === 'weekly') && (
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase text-gray-400">
-                {periodMode === 'daily' ? 'Pilih Tanggal Harian' : 'Tanggal Akhir (7 Hari ke Belakang)'}
-              </label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className={`w-full px-3 py-1.5 rounded-2xl border text-xs ${cardBg}`}
-              />
-            </div>
-          )}
-
-          {periodMode === 'monthly' && (
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-gray-400">Pilih Bulan</label>
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className={`w-full px-3 py-1.5 rounded-2xl border text-xs ${cardBg}`}
-                >
-                  {MONTHS.map((m) => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-gray-400">Pilih Tahun</label>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                  className={`w-full px-3 py-1.5 rounded-2xl border text-xs ${cardBg}`}
-                >
-                  {availableYears.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
-
-          {periodMode === 'yearly' && (
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase text-gray-400">Pilih Tahun</label>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className={`w-full px-3 py-1.5 rounded-2xl border text-xs ${cardBg}`}
-              >
-                {availableYears.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {periodMode === 'custom' && (
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-gray-400">Dari Tanggal</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className={`w-full px-3 py-1.5 rounded-2xl border text-xs ${cardBg}`}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-gray-400">Sampai Tanggal</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className={`w-full px-3 py-1.5 rounded-2xl border text-xs ${cardBg}`}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* BANNER SALDO MENGIKUTI PERIODE */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#709775] via-[#588157] to-[#3a5a40] text-white p-6 shadow-xl shadow-[#709775]/20">
-          <div className="absolute -right-4 -bottom-4 opacity-15 pointer-events-none text-9xl font-bold">
-            🍃
-          </div>
-          <div className="relative z-10 space-y-3">
-            <div className="flex justify-between items-start">
-              <div>
-                <span className="text-[11px] uppercase tracking-wider text-[#d8e8d9] font-semibold">
-                  {periodLabel}
-                </span>
-                <h2 className="text-3xl font-black mt-1 tracking-tight">{formatRupiah(balance)}</h2>
-              </div>
-              <span className="text-2xl animate-pulse">✨</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-white/10">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-2.5">
-                <div className="flex items-center space-x-1 text-emerald-200 text-xs">
-                  <ArrowDownRight size={14} />
-                  <span>Pemasukan</span>
-                </div>
-                <p className="font-bold text-sm text-emerald-100 mt-0.5">
-                  {formatRupiah(totalIncome)}
-                </p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-2.5">
-                <div className="flex items-center space-x-1 text-rose-200 text-xs">
-                  <ArrowUpRight size={14} />
-                  <span>Pengeluaran</span>
-                </div>
-                <p className="font-bold text-sm text-rose-100 mt-0.5">
-                  {formatRupiah(totalExpense)}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* RANDOM MATCHA TIP */}
-        <div
-          className={`p-3.5 rounded-2xl border ${
-            darkMode
-              ? 'bg-[#243326]/60 border-[#344d37]'
-              : 'bg-[#e8f5e9]/80 border-[#a1cca5]/40'
-          } flex items-center space-x-3`}
-        >
-          <span className="text-xl">💡</span>
-          <p className="text-xs font-medium leading-relaxed italic text-[#588157] dark:text-[#a1cca5]">
-            "{MATCHA_TIPS[Math.floor(Math.random() * MATCHA_TIPS.length)]}"
+          <p className="text-3xl font-extrabold tracking-tight mt-1.5">
+            {formatRupiah(currentBalance)}
           </p>
-        </div>
+          <p className="text-[11px] text-[#dce8df] mt-1.5">
+            Akumulasi seluruh pemasukan dikurangi pengeluaran
+          </p>
+        </section>
 
         {/* TAB DASHBOARD */}
         {activeTab === 'dashboard' && (
           <div className="space-y-4">
-            <div className={`p-4 rounded-3xl border ${cardBg} shadow-sm space-y-3`}>
-              <div className="flex justify-between items-center">
-                <h3 className="font-bold text-sm flex items-center space-x-1.5">
-                  <Target size={16} className="text-[#709775]" />
-                  <span>Matcha Savings Goals 👛</span>
-                </h3>
-                <button
-                  onClick={() => setActiveTab('goals')}
-                  className="text-xs font-bold text-[#709775] hover:underline flex items-center"
+            {/* RINGKASAN HARI INI (TANPA FILTER) */}
+            <section className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold">Hari Ini</h2>
+                <span className={`text-xs ${mutedText}`}>{todayStr}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div
+                  className={`p-3 rounded-2xl border ${
+                    darkMode
+                      ? 'bg-[#172219] border-[#2b3f30]'
+                      : 'bg-[#f6faf7] border-[#e2ede5]'
+                  }`}
                 >
-                  Lihat Semua <ChevronRight size={14} />
-                </button>
-              </div>
+                  <div className="flex items-center space-x-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    <ArrowDownRight size={14} />
+                    <span>Pemasukan</span>
+                  </div>
+                  <p className="text-sm font-bold mt-1">{formatRupiah(todayIncome)}</p>
+                </div>
 
-              <div className="space-y-2.5">
-                {goals.slice(0, 2).map((g) => {
-                  const percent = Math.min(100, Math.round((g.current / g.target) * 100));
-                  return (
-                    <div key={g.id} className="space-y-1">
-                      <div className="flex justify-between text-xs font-semibold">
-                        <span>
-                          {g.icon} {g.name}
-                        </span>
-                        <span className="text-[#709775]">{percent}%</span>
-                      </div>
-                      <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-[#709775] to-[#a1cca5] transition-all duration-500 rounded-full"
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className={`p-4 rounded-3xl border ${cardBg} shadow-sm space-y-3`}>
-              <div className="flex justify-between items-center">
-                <h3 className="font-bold text-sm flex items-center space-x-1.5">
-                  <List size={16} className="text-[#709775]" />
-                  <span>Aktivitas Periode Ini 🍃</span>
-                </h3>
-                <button
-                  onClick={() => setActiveTab('transactions')}
-                  className="text-xs font-bold text-[#709775] hover:underline flex items-center"
+                <div
+                  className={`p-3 rounded-2xl border ${
+                    darkMode
+                      ? 'bg-[#172219] border-[#2b3f30]'
+                      : 'bg-[#f6faf7] border-[#e2ede5]'
+                  }`}
                 >
-                  Semua <ChevronRight size={14} />
-                </button>
+                  <div className="flex items-center space-x-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">
+                    <ArrowUpRight size={14} />
+                    <span>Pengeluaran</span>
+                  </div>
+                  <p className="text-sm font-bold mt-1">{formatRupiah(todayExpense)}</p>
+                </div>
+              </div>
+            </section>
+
+            {/* RINGKASAN BULAN INI (TANPA FILTER) */}
+            <section className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold">Bulan Ini</h2>
+                <span className={`text-xs ${mutedText}`}>{currentMonthPrefix}</span>
               </div>
 
-              {periodTransactions.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-4">
-                  Belum ada transaksi pada periode ini.
+              <div className="grid grid-cols-2 gap-2.5">
+                <div
+                  className={`p-3 rounded-2xl border ${
+                    darkMode
+                      ? 'bg-[#172219] border-[#2b3f30]'
+                      : 'bg-[#f6faf7] border-[#e2ede5]'
+                  }`}
+                >
+                  <div className="flex items-center space-x-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                    <TrendingUp size={14} />
+                    <span>Pemasukan</span>
+                  </div>
+                  <p className="text-sm font-bold mt-1">{formatRupiah(monthIncome)}</p>
+                </div>
+
+                <div
+                  className={`p-3 rounded-2xl border ${
+                    darkMode
+                      ? 'bg-[#172219] border-[#2b3f30]'
+                      : 'bg-[#f6faf7] border-[#e2ede5]'
+                  }`}
+                >
+                  <div className="flex items-center space-x-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">
+                    <TrendingDown size={14} />
+                    <span>Pengeluaran</span>
+                  </div>
+                  <p className="text-sm font-bold mt-1">{formatRupiah(monthExpense)}</p>
+                </div>
+              </div>
+            </section>
+
+            {/* CEK MINGGU INI ATAU RANGE TANGGAL */}
+            <section className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-1.5">
+                  <Calendar size={15} className="text-[#588157]" />
+                  <h2 className="text-sm font-bold">Cek Periode</h2>
+                </div>
+
+                <div className="flex rounded-xl p-0.5 bg-[#588157]/10">
+                  <button
+                    type="button"
+                    onClick={() => setCheckMode('weekly')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                      checkMode === 'weekly'
+                        ? 'bg-[#588157] text-white'
+                        : 'text-[#588157] dark:text-[#a3c4a8]'
+                    }`}
+                  >
+                    Minggu Ini
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCheckMode('range')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                      checkMode === 'range'
+                        ? 'bg-[#588157] text-white'
+                        : 'text-[#588157] dark:text-[#a3c4a8]'
+                    }`}
+                  >
+                    Range Tanggal
+                  </button>
+                </div>
+              </div>
+
+              {checkMode === 'weekly' ? (
+                <p className={`text-xs ${mutedText}`}>
+                  Periode 7 hari terakhir: {weeklyStartStr} s/d {todayStr}
                 </p>
               ) : (
-                <div className="space-y-2.5">
-                  {periodTransactions.slice(0, 4).map((t) => (
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className={`text-[11px] font-medium ${mutedText}`}>Dari Tanggal</label>
+                    <input
+                      type="date"
+                      value={rangeStart}
+                      onChange={(e) => setRangeStart(e.target.value)}
+                      className={`w-full mt-1 px-2.5 py-1.5 rounded-xl border text-xs ${cardBg}`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`text-[11px] font-medium ${mutedText}`}>Sampai Tanggal</label>
+                    <input
+                      type="date"
+                      value={rangeEnd}
+                      onChange={(e) => setRangeEnd(e.target.value)}
+                      className={`w-full mt-1 px-2.5 py-1.5 rounded-xl border text-xs ${cardBg}`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <div
+                  className={`p-3 rounded-2xl border ${
+                    darkMode
+                      ? 'bg-[#172219] border-[#2b3f30]'
+                      : 'bg-[#f6faf7] border-[#e2ede5]'
+                  }`}
+                >
+                  <span className={`text-[11px] ${mutedText}`}>Pemasukan</span>
+                  <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    {formatRupiah(checkedIncome)}
+                  </p>
+                </div>
+                <div
+                  className={`p-3 rounded-2xl border ${
+                    darkMode
+                      ? 'bg-[#172219] border-[#2b3f30]'
+                      : 'bg-[#f6faf7] border-[#e2ede5]'
+                  }`}
+                >
+                  <span className={`text-[11px] ${mutedText}`}>Pengeluaran</span>
+                  <p className="text-sm font-bold text-rose-600 dark:text-rose-400 mt-0.5">
+                    {formatRupiah(checkedExpense)}
+                  </p>
+                </div>
+              </div>
+
+              {checkedTransactions.length > 0 ? (
+                <div className="space-y-2 pt-1">
+                  {checkedTransactions.slice(0, 3).map((item) => (
                     <div
-                      key={t.id}
-                      className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-[#709775]/5 transition-colors"
+                      key={item.id}
+                      className="flex items-center justify-between text-xs py-1.5 border-t border-[#dce8df]/60 dark:border-[#314736]"
                     >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-2xl bg-[#709775]/10 flex items-center justify-center text-lg">
-                          {MATCHA_CATEGORIES.find((c) => c.name === t.category)?.emoji || '🍃'}
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-bold leading-snug">{t.title}</h4>
-                          <div className="flex items-center space-x-1.5 text-[10px] text-gray-400 mt-0.5">
-                            <span>{t.date}</span>
-                            <span>•</span>
-                            <span className="text-[#709775] font-medium">{t.tag}</span>
-                          </div>
-                        </div>
+                      <div>
+                        <p className="font-semibold">{item.title}</p>
+                        <p className={`text-[11px] ${mutedText}`}>
+                          {item.date} • {item.category}
+                        </p>
                       </div>
                       <span
-                        className={`text-xs font-extrabold ${
-                          t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'
+                        className={`font-bold ${
+                          item.type === 'income'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-rose-600 dark:text-rose-400'
                         }`}
                       >
-                        {t.type === 'income' ? '+' : '-'}
-                        {formatRupiah(t.amount)}
+                        {item.type === 'income' ? '+' : '-'}
+                        {formatRupiah(item.amount)}
                       </span>
                     </div>
                   ))}
                 </div>
+              ) : (
+                <p className={`text-xs text-center py-2 ${mutedText}`}>
+                  Tidak ada transaksi pada periode ini.
+                </p>
               )}
-            </div>
+            </section>
+
+            {/* GRAFIK PENGELUARAN BULAN INI */}
+            <section className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold">Distribusi Pengeluaran Bulan Ini</h2>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('transactions')}
+                  className="text-xs font-semibold text-[#588157] dark:text-[#a3c4a8] flex items-center"
+                >
+                  Riwayat <ChevronRight size={14} />
+                </button>
+              </div>
+
+              {monthExpenseChartData.length === 0 ? (
+                <p className={`text-xs text-center py-5 ${mutedText}`}>
+                  Belum ada pengeluaran di bulan ini.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="h-44">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={monthExpenseChartData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={40}
+                          outerRadius={66}
+                          paddingAngle={3}
+                          dataKey="value"
+                        >
+                          {monthExpenseChartData.map((entry, idx) => (
+                            <Cell
+                              key={entry.name}
+                              fill={CATEGORIES[idx % CATEGORIES.length].color}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(val) => formatRupiah(val)} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {monthExpenseChartData.map((d, idx) => (
+                      <div key={d.name} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1.5 truncate">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{
+                              backgroundColor: CATEGORIES[idx % CATEGORIES.length].color
+                            }}
+                          />
+                          <span className="truncate">{d.name}</span>
+                        </div>
+                        <span className={`font-medium ml-1 ${mutedText}`}>
+                          {formatRupiah(d.value)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
           </div>
         )}
 
@@ -663,13 +723,13 @@ export default function App() {
           <div className="space-y-3">
             <div className="flex space-x-2">
               <div className="relative flex-1">
-                <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+                <Search size={15} className={`absolute left-3 top-2.5 ${mutedText}`} />
                 <input
                   type="text"
-                  placeholder="Cari transaksi / hashtag..."
+                  placeholder="Cari nama atau catatan..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`w-full pl-9 pr-3 py-2 rounded-2xl border text-xs focus:outline-none focus:ring-2 focus:ring-[#709775] ${cardBg}`}
+                  className={`w-full pl-9 pr-3 py-2 rounded-2xl border text-xs focus:outline-none ${cardBg}`}
                 />
               </div>
               <select
@@ -677,8 +737,8 @@ export default function App() {
                 onChange={(e) => setFilterCategory(e.target.value)}
                 className={`px-3 py-2 rounded-2xl border text-xs focus:outline-none ${cardBg}`}
               >
-                <option value="All">Semua Kategori</option>
-                {MATCHA_CATEGORIES.map((c) => (
+                <option value="All">Semua</option>
+                {CATEGORIES.map((c) => (
                   <option key={c.name} value={c.name}>
                     {c.name}
                   </option>
@@ -687,40 +747,40 @@ export default function App() {
             </div>
 
             {filteredTransactions.length === 0 ? (
-              <div className={`p-6 rounded-3xl border ${cardBg} text-center text-xs text-gray-400`}>
-                Tidak ada transaksi yang cocok dengan filter ini.
+              <div className={`p-6 rounded-3xl border ${cardBg} text-center text-xs ${mutedText}`}>
+                Belum ada transaksi yang sesuai.
               </div>
             ) : (
               <div className="space-y-2">
                 {filteredTransactions.map((t) => (
                   <div
                     key={t.id}
-                    className={`p-3 rounded-2xl border ${cardBg} flex items-center justify-between shadow-sm`}
+                    className={`p-3.5 rounded-2xl border ${cardBg} flex items-center justify-between`}
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-2xl bg-[#709775]/10 flex items-center justify-center text-lg">
-                        {MATCHA_CATEGORIES.find((c) => c.name === t.category)?.emoji || '🍵'}
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold">{t.title}</h4>
-                        <p className="text-[10px] text-gray-400">
-                          {t.date} • {t.paymentMethod} •{' '}
-                          <span className="text-[#709775]">{t.tag}</span>
-                        </p>
-                      </div>
+                    <div>
+                      <p className="text-xs font-bold">{t.title}</p>
+                      <p className={`text-[11px] mt-0.5 ${mutedText}`}>
+                        {t.date} • {t.category} • {t.paymentMethod}
+                      </p>
+                      {t.note && <p className={`text-[11px] mt-0.5 ${mutedText}`}>{t.note}</p>}
                     </div>
+
                     <div className="flex items-center space-x-2">
                       <span
-                        className={`text-xs font-extrabold ${
-                          t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'
+                        className={`text-xs font-bold ${
+                          t.type === 'income'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-rose-600 dark:text-rose-400'
                         }`}
                       >
                         {t.type === 'income' ? '+' : '-'}
                         {formatRupiah(t.amount)}
                       </span>
                       <button
+                        type="button"
                         onClick={() => handleDeleteTransaction(t.id)}
-                        className="p-1 text-gray-400 hover:text-rose-500 transition-colors"
+                        aria-label="Hapus transaksi"
+                        className={`p-1.5 rounded-lg ${mutedText} hover:text-rose-600`}
                       >
                         <Trash2 size={14} />
                       </button>
@@ -732,17 +792,18 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB SAVINGS GOALS */}
+        {/* TAB TARGET TABUNGAN */}
         {activeTab === 'goals' && (
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold text-sm">Target Tabungan Aesthetic 👛</h3>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold">Target Tabungan</h2>
               <button
+                type="button"
                 onClick={() => setShowGoalModal(true)}
-                className="px-3 py-1.5 rounded-2xl bg-[#709775] text-white text-xs font-bold flex items-center space-x-1 shadow-md shadow-[#709775]/20"
+                className="px-3 py-1.5 rounded-xl bg-[#588157] text-white text-xs font-semibold flex items-center space-x-1"
               >
                 <Plus size={14} />
-                <span>Target Baru</span>
+                <span>Tambah Target</span>
               </button>
             </div>
 
@@ -750,25 +811,22 @@ export default function App() {
               {goals.map((g) => {
                 const percent = Math.min(100, Math.round((g.current / g.target) * 100));
                 return (
-                  <div key={g.id} className={`p-4 rounded-3xl border ${cardBg} space-y-3 shadow-sm`}>
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-2xl p-2 rounded-2xl bg-[#709775]/10">{g.icon}</span>
-                        <div>
-                          <h4 className="font-bold text-xs">{g.name}</h4>
-                          <p className="text-[10px] text-gray-400">
-                            {formatRupiah(g.current)} / {formatRupiah(g.target)}
-                          </p>
-                        </div>
+                  <div key={g.id} className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-xs font-bold">{g.name}</h3>
+                        <p className={`text-[11px] mt-0.5 ${mutedText}`}>
+                          {formatRupiah(g.current)} dari {formatRupiah(g.target)}
+                        </p>
                       </div>
-                      <span className="text-xs font-black text-[#709775] bg-[#709775]/10 px-2 py-1 rounded-full">
+                      <span className="text-xs font-bold text-[#588157] dark:text-[#a3c4a8]">
                         {percent}%
                       </span>
                     </div>
 
-                    <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="w-full h-2.5 rounded-full bg-[#588157]/15 overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#709775] to-[#a1cca5] transition-all duration-500 rounded-full"
+                        className="h-full bg-[#588157] rounded-full transition-all duration-300"
                         style={{ width: `${percent}%` }}
                       />
                     </div>
@@ -777,30 +835,36 @@ export default function App() {
                       <div className="flex space-x-2 pt-1">
                         <input
                           type="number"
-                          placeholder="Nominal Top-up"
+                          placeholder="Nominal"
                           value={topUpAmount}
                           onChange={(e) => setTopUpAmount(e.target.value)}
-                          className={`flex-1 px-3 py-1 rounded-xl border text-xs ${cardBg}`}
+                          className={`flex-1 px-3 py-1.5 rounded-xl border text-xs ${cardBg}`}
                         />
                         <button
+                          type="button"
                           onClick={() => handleTopUpGoal(g.id)}
-                          className="px-3 py-1 rounded-xl bg-[#709775] text-white text-xs font-bold"
+                          className="px-3 py-1.5 rounded-xl bg-[#588157] text-white text-xs font-semibold"
                         >
                           Simpan
                         </button>
                         <button
+                          type="button"
                           onClick={() => setTopUpGoalId(null)}
-                          className="px-2 py-1 rounded-xl border text-xs"
+                          className={`px-2.5 py-1.5 rounded-xl border text-xs ${cardBg}`}
                         >
-                          <X size={12} />
+                          <X size={13} />
                         </button>
                       </div>
                     ) : (
                       <button
-                        onClick={() => setTopUpGoalId(g.id)}
-                        className="w-full py-2 rounded-2xl border border-[#709775] text-[#709775] text-xs font-bold hover:bg-[#709775] hover:text-white transition-colors"
+                        type="button"
+                        onClick={() => {
+                          setTopUpGoalId(g.id);
+                          setTopUpAmount('');
+                        }}
+                        className="w-full py-2 rounded-2xl border border-[#588157] text-[#588157] dark:text-[#a3c4a8] text-xs font-semibold hover:bg-[#588157] hover:text-white transition-colors"
                       >
-                        + Top Up Tabungan 💖
+                        Tambah Dana
                       </button>
                     )}
                   </div>
@@ -810,176 +874,136 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB ANALYTICS */}
-        {activeTab === 'analytics' && (
-          <div className="space-y-4">
-            <div className={`p-4 rounded-3xl border ${cardBg} shadow-sm space-y-4`}>
-              <h3 className="font-bold text-sm text-center">
-                Analisis Pengeluaran ({periodLabel}) 📊
-              </h3>
-
-              {chartData.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-6">
-                  Belum ada data pengeluaran pada periode ini.
-                </p>
-              ) : (
-                <>
-                  <div className="h-48">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={chartData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={45}
-                          outerRadius={70}
-                          paddingAngle={4}
-                          dataKey="value"
-                        >
-                          {chartData.map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={MATCHA_CATEGORIES[index % MATCHA_CATEGORIES.length].color}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => formatRupiah(value)} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    {chartData.map((d, i) => (
-                      <div key={d.name} className="flex items-center space-x-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{
-                            backgroundColor: MATCHA_CATEGORIES[i % MATCHA_CATEGORIES.length].color
-                          }}
-                        />
-                        <span className="truncate">{d.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* TAB BACKUP & SETTINGS */}
+        {/* TAB DATA & PANDUAN ANDROID */}
         {activeTab === 'settings' && (
           <div className="space-y-4">
-            <div className={`p-4 rounded-3xl border ${cardBg} shadow-sm space-y-3`}>
-              <h3 className="font-bold text-sm flex items-center space-x-2">
-                <PiggyBank size={16} className="text-[#709775]" />
-                <span>Kelola Data (100% Gratis & Safe) 🔒</span>
-              </h3>
-              <p className="text-xs text-gray-400">
-                Data kamu otomatis tersimpan di HP/laptop ini (`localStorage`). Kamu bisa download
-                backup-nya agar tidak hilang saat ganti perangkat.
+            <section className={`p-4 rounded-3xl border ${cardBg} space-y-3`}>
+              <h2 className="text-sm font-bold">Kelola Data Lokal</h2>
+              <p className={`text-xs leading-relaxed ${mutedText}`}>
+                Data tersimpan otomatis di browser perangkat ini. Unduh cadangan secara berkala
+                sebelum membersihkan data browser atau pindah perangkat.
               </p>
 
-              <div className="space-y-2 pt-2">
+              <div className="space-y-2 pt-1">
                 <button
+                  type="button"
                   onClick={exportJSON}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-[#709775] text-white text-xs font-bold flex items-center justify-center space-x-2 shadow-md shadow-[#709775]/20"
+                  className="w-full py-2.5 px-4 rounded-2xl bg-[#588157] text-white text-xs font-semibold flex items-center justify-center space-x-2"
                 >
                   <Download size={14} />
-                  <span>Download Backup JSON</span>
+                  <span>Unduh Backup (.JSON)</span>
                 </button>
 
                 <button
+                  type="button"
                   onClick={exportCSV}
-                  className="w-full py-2.5 px-4 rounded-2xl border border-[#709775] text-[#709775] text-xs font-bold flex items-center justify-center space-x-2"
+                  className="w-full py-2.5 px-4 rounded-2xl border border-[#588157] text-[#588157] dark:text-[#a3c4a8] text-xs font-semibold flex items-center justify-center space-x-2"
                 >
                   <Download size={14} />
-                  <span>Export Transaksi to Excel (.CSV)</span>
+                  <span>Ekspor Tabel (.CSV)</span>
                 </button>
 
-                <label className="w-full py-2.5 px-4 rounded-2xl border border-gray-300 dark:border-gray-700 text-xs font-bold flex items-center justify-center space-x-2 cursor-pointer">
+                <label
+                  className={`w-full py-2.5 px-4 rounded-2xl border text-xs font-semibold flex items-center justify-center space-x-2 cursor-pointer ${cardBg}`}
+                >
                   <Upload size={14} />
-                  <span>Restore Data dari JSON</span>
+                  <span>Pulihkan dari File (.JSON)</span>
                   <input type="file" accept=".json" onChange={importJSON} className="hidden" />
                 </label>
 
                 <button
+                  type="button"
                   onClick={resetAllData}
-                  className="w-full py-2.5 px-4 rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-900/20 text-xs font-bold flex items-center justify-center space-x-2"
+                  className="w-full py-2.5 px-4 rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 text-xs font-semibold flex items-center justify-center space-x-2"
                 >
                   <Trash2 size={14} />
-                  <span>Reset Semua Data</span>
+                  <span>Reset Data</span>
                 </button>
               </div>
-            </div>
+            </section>
+
+            <section className={`p-4 rounded-3xl border ${cardBg} space-y-2`}>
+              <h2 className="text-sm font-bold">Pasang ke Layar Android</h2>
+              <p className={`text-xs leading-relaxed ${mutedText}`}>
+                Buka alamat aplikasi ini di Google Chrome Android, ketuk menu titik tiga di kanan
+                atas, lalu pilih <strong>Tambahkan ke layar utama</strong> atau{' '}
+                <strong>Instal aplikasi</strong>. Aplikasi akan muncul sebagai ikon mandiri di layar
+                depan.
+              </p>
+            </section>
           </div>
         )}
       </main>
 
       {/* MODAL INPUT TRANSAKSI */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className={`w-full max-w-md rounded-t-3xl sm:rounded-3xl ${cardBg} p-5 space-y-4`}>
-            <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Catat Cuan / Spending 🍃</h3>
-              <button onClick={() => setShowAddModal(false)}>
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className={`w-full max-w-md rounded-t-3xl sm:rounded-3xl border ${cardBg} p-5 space-y-4`}>
+            <div className="flex items-center justify-between border-b border-[#dce8df] dark:border-[#314736] pb-3">
+              <h3 className="text-sm font-bold">Catat Transaksi</h3>
+              <button type="button" onClick={() => setShowAddModal(false)}>
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleAddTransaction} className="space-y-3">
-              <div className="flex rounded-2xl p-1 bg-gray-100 dark:bg-gray-800">
+              <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-[#588157]/10">
                 <button
                   type="button"
                   onClick={() => setType('expense')}
-                  className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition-colors ${
-                    type === 'expense' ? 'bg-rose-500 text-white' : 'text-gray-400'
+                  className={`py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+                    type === 'expense'
+                      ? 'bg-[#588157] text-white'
+                      : 'text-[#588157] dark:text-[#a3c4a8]'
                   }`}
                 >
-                  Pengeluaran 💸
+                  Pengeluaran
                 </button>
                 <button
                   type="button"
                   onClick={() => setType('income')}
-                  className={`flex-1 py-1.5 text-xs font-bold rounded-xl transition-colors ${
-                    type === 'income' ? 'bg-emerald-500 text-white' : 'text-gray-400'
+                  className={`py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+                    type === 'income'
+                      ? 'bg-[#588157] text-white'
+                      : 'text-[#588157] dark:text-[#a3c4a8]'
                   }`}
                 >
-                  Pemasukan ✨
+                  Pemasukan
                 </button>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Judul Transaksi</label>
+                <label className={`text-[11px] font-semibold ${mutedText}`}>Keterangan</label>
                 <input
                   type="text"
-                  placeholder="Misal: Iced Matcha Oat Milk 🍵"
+                  placeholder="Contoh: Makan siang / Gaji"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                  className={`w-full mt-1 px-3 py-2 rounded-2xl border text-xs ${cardBg}`}
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase">Nominal (Rp)</label>
+                  <label className={`text-[11px] font-semibold ${mutedText}`}>Nominal (Rp)</label>
                   <input
                     type="number"
-                    placeholder="38000"
+                    min="1"
+                    placeholder="25000"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                    className={`w-full mt-1 px-3 py-2 rounded-2xl border text-xs ${cardBg}`}
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase">Tanggal</label>
+                  <label className={`text-[11px] font-semibold ${mutedText}`}>Tanggal</label>
                   <input
                     type="date"
                     value={txDate}
                     onChange={(e) => setTxDate(e.target.value)}
-                    className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                    className={`w-full mt-1 px-3 py-2 rounded-2xl border text-xs ${cardBg}`}
                     required
                   />
                 </div>
@@ -987,141 +1011,128 @@ export default function App() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase">Kategori</label>
+                  <label className={`text-[11px] font-semibold ${mutedText}`}>Kategori</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                    className={`w-full mt-1 px-3 py-2 rounded-2xl border text-xs ${cardBg}`}
                   >
-                    {MATCHA_CATEGORIES.map((c) => (
+                    {CATEGORIES.map((c) => (
                       <option key={c.name} value={c.name}>
-                        {c.emoji} {c.name}
+                        {c.name}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase">Pembayaran</label>
+                  <label className={`text-[11px] font-semibold ${mutedText}`}>Metode Bayar</label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                    className={`w-full mt-1 px-3 py-2 rounded-2xl border text-xs ${cardBg}`}
                   >
                     <option value="QRIS">QRIS</option>
                     <option value="E-Wallet">E-Wallet</option>
                     <option value="Transfer">Transfer</option>
-                    <option value="Cash">Cash</option>
+                    <option value="Tunai">Tunai</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Hashtag Tag</label>
+                <label className={`text-[11px] font-semibold ${mutedText}`}>Catatan (Opsional)</label>
                 <input
                   type="text"
-                  placeholder="#MatchaDaily"
-                  value={tag}
-                  onChange={(e) => setTag(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                  placeholder="Catatan singkat"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className={`w-full mt-1 px-3 py-2 rounded-2xl border text-xs ${cardBg}`}
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-2xl bg-[#709775] text-white font-bold text-xs shadow-lg shadow-[#709775]/30 mt-2"
+                className="w-full py-3 rounded-2xl bg-[#588157] text-white text-xs font-bold mt-1"
               >
-                Simpan Transaksi 💖
+                Simpan Transaksi
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* MODAL ADD GOAL */}
+      {/* MODAL TAMBAH TARGET TABUNGAN */}
       {showGoalModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className={`w-full max-w-md rounded-t-3xl sm:rounded-3xl ${cardBg} p-5 space-y-4`}>
-            <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-sm">Target Impian Baru 👛</h3>
-              <button onClick={() => setShowGoalModal(false)}>
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className={`w-full max-w-md rounded-t-3xl sm:rounded-3xl border ${cardBg} p-5 space-y-4`}>
+            <div className="flex items-center justify-between border-b border-[#dce8df] dark:border-[#314736] pb-3">
+              <h3 className="text-sm font-bold">Target Tabungan Baru</h3>
+              <button type="button" onClick={() => setShowGoalModal(false)}>
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleAddGoal} className="space-y-3">
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Nama Impian</label>
+                <label className={`text-[11px] font-semibold ${mutedText}`}>Nama Target</label>
                 <input
                   type="text"
-                  placeholder="Misal: Liburan ke Japan ⛩️"
+                  placeholder="Contoh: Dana Darurat"
                   value={goalName}
                   onChange={(e) => setGoalName(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                  className={`w-full mt-1 px-3 py-2 rounded-2xl border text-xs ${cardBg}`}
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Target Biaya (Rp)</label>
+                <label className={`text-[11px] font-semibold ${mutedText}`}>Target Nominal (Rp)</label>
                 <input
                   type="number"
-                  placeholder="5000000"
+                  min="1"
+                  placeholder="2000000"
                   value={goalTarget}
                   onChange={(e) => setGoalTarget(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-2xl border text-xs mt-1 ${cardBg}`}
+                  className={`w-full mt-1 px-3 py-2 rounded-2xl border text-xs ${cardBg}`}
                   required
                 />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase">Pilih Emoji</label>
-                <div className="flex space-x-2 mt-1">
-                  {['🍵', '🎟️', '📱', '👗', '🌊', '✈️'].map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => setGoalIcon(emoji)}
-                      className={`p-2 rounded-xl text-lg ${
-                        goalIcon === emoji ? 'bg-[#709775]/20 border border-[#709775]' : ''
-                      }`}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-2xl bg-[#709775] text-white font-bold text-xs shadow-lg shadow-[#709775]/30 mt-2"
+                className="w-full py-3 rounded-2xl bg-[#588157] text-white text-xs font-bold mt-1"
               >
-                Tambah Target ✨
+                Simpan Target
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* BOTTOM NAVIGATION */}
+      {/* NAVIGASI BAWAH */}
       <nav
-        className={`fixed bottom-0 left-0 right-0 z-30 max-w-md mx-auto ${
-          darkMode ? 'bg-[#1b241c]/90 border-[#344d37]' : 'bg-white/90 border-[#d8e8d9]'
-        } border-t backdrop-blur-md px-6 py-2 flex justify-between items-center rounded-t-3xl shadow-lg`}
+        className={`fixed bottom-0 left-0 right-0 z-30 max-w-md mx-auto border-t backdrop-blur-md px-5 py-2 flex items-center justify-between ${
+          darkMode
+            ? 'bg-[#162018]/95 border-[#314736]'
+            : 'bg-white/95 border-[#dce8df]'
+        }`}
       >
         <button
+          type="button"
           onClick={() => setActiveTab('dashboard')}
           className={`flex flex-col items-center space-y-1 ${
-            activeTab === 'dashboard' ? 'text-[#709775]' : 'text-gray-400'
+            activeTab === 'dashboard' ? 'text-[#588157] dark:text-[#a3c4a8]' : mutedText
           }`}
         >
           <Wallet size={18} />
-          <span className="text-[10px] font-semibold">Home</span>
+          <span className="text-[10px] font-semibold">Beranda</span>
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('transactions')}
           className={`flex flex-col items-center space-y-1 ${
-            activeTab === 'transactions' ? 'text-[#709775]' : 'text-gray-400'
+            activeTab === 'transactions' ? 'text-[#588157] dark:text-[#a3c4a8]' : mutedText
           }`}
         >
           <List size={18} />
@@ -1129,29 +1140,33 @@ export default function App() {
         </button>
 
         <button
+          type="button"
           onClick={() => setShowAddModal(true)}
-          className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#709775] to-[#a1cca5] text-white flex items-center justify-center shadow-lg shadow-[#709775]/40 -mt-6 active:scale-95 transition-transform"
+          aria-label="Tambah transaksi"
+          className="w-11 h-11 rounded-2xl bg-[#588157] text-white flex items-center justify-center shadow-md -mt-4 active:scale-95 transition-transform"
         >
-          <Plus size={24} />
+          <Plus size={22} />
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('goals')}
           className={`flex flex-col items-center space-y-1 ${
-            activeTab === 'goals' ? 'text-[#709775]' : 'text-gray-400'
+            activeTab === 'goals' ? 'text-[#588157] dark:text-[#a3c4a8]' : mutedText
           }`}
         >
           <Target size={18} />
-          <span className="text-[10px] font-semibold">Impian</span>
+          <span className="text-[10px] font-semibold">Target</span>
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('settings')}
           className={`flex flex-col items-center space-y-1 ${
-            activeTab === 'settings' ? 'text-[#709775]' : 'text-gray-400'
+            activeTab === 'settings' ? 'text-[#588157] dark:text-[#a3c4a8]' : mutedText
           }`}
         >
-          <PiggyBank size={18} />
+          <Database size={18} />
           <span className="text-[10px] font-semibold">Data</span>
         </button>
       </nav>
